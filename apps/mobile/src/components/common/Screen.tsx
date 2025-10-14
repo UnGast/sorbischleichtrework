@@ -1,16 +1,23 @@
 import { PropsWithChildren } from 'react';
-import { View, StyleSheet, ViewProps } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, ViewProps } from 'react-native';
 
 interface ScreenProps extends ViewProps {
+  scrollable?: boolean;
   padded?: boolean;
 }
 
-export function Screen({ children, style, padded = true, ...rest }: PropsWithChildren<ScreenProps>) {
-  return (
-    <View style={[styles.root, padded && styles.padded, style]} {...rest}>
+export function Screen({ children, scrollable = false, padded = true, style, ...rest }: PropsWithChildren<ScreenProps>) {
+  const content = scrollable ? (
+    <ScrollView contentContainerStyle={[padded && styles.padded]} style={style} {...rest}>
       {children}
-    </View>
+    </ScrollView>
+  ) : (
+    <SafeAreaView style={[styles.root, padded && styles.padded, style]} {...rest}>
+      {children}
+    </SafeAreaView>
   );
+
+  return content;
 }
 
 const styles = StyleSheet.create({
