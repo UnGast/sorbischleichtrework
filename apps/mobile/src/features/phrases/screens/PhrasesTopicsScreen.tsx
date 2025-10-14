@@ -7,7 +7,7 @@ import { useTopicsByType } from '@/services/content/contentRepository';
 import { loadMockContent } from '@/services/content/contentService';
 import { PhrasesStackParamList } from './PhrasesNavigator';
 
-import Lektion1Icon from '@/assets/images/icon.png';
+import Lektion1Icon from '@assets/images/lektion1.png';
 
 type Props = NativeStackScreenProps<PhrasesStackParamList, 'PhrasesTopics'>;
 

@@ -1,4 +1,4 @@
-import { ContentTopic, VocabularyItem, PhraseItem } from '@/types/content';
+import { ContentTopic, VocabularyItem, PhraseItem, HundredSecondsItem } from '@/types/content';
 
 export const mockTopics: ContentTopic[] = [
   {
@@ -13,6 +13,12 @@ export const mockTopics: ContentTopic[] = [
     type: 'phrases',
     nameGerman: 'Alltagssätze',
     nameSorbian: 'Wšědne sady',
+  },
+  {
+    id: 'hundred-01',
+    type: 'hundredSeconds',
+    nameGerman: 'Sorbisch in 100 Sekunden',
+    nameSorbian: 'Serbsce za 100 sekundow',
   },
 ];
 
@@ -57,3 +63,11 @@ export const mockPhrases: Record<string, PhraseItem[]> = {
     },
   ],
 };
+
+export const mockHundredSeconds: HundredSecondsItem[] = [
+  { id: 'hund-01', name: 'Begrüßung', audio: 'hundredsec1.mp3' },
+  { id: 'hund-02', name: 'Verabschiedung', audio: 'hundredsec2.mp3' },
+  { id: 'hund-03', name: 'Nett sein', audio: 'hundredsec3.mp3' },
+  { id: 'hund-04', name: 'Kiosk', audio: 'hundredsec4.mp3' },
+  { id: 'hund-05', name: 'Liebe', audio: 'hundredsec5.mp3' },
+];

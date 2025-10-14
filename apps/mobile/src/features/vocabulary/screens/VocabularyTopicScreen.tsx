@@ -7,7 +7,7 @@ import { VocabularyStackParamList } from './VocabularyNavigator';
 import { useTopicsByType, useVocabularyMap } from '@/services/content/contentRepository';
 import { loadMockContent } from '@/services/content/contentService';
 
-import Lektion1Icon from '@/assets/images/icon.png';
+import Lektion1Icon from '@assets/images/lektion1.png';
 
 type Props = NativeStackScreenProps<VocabularyStackParamList, 'VocabularyTopics'>;
 

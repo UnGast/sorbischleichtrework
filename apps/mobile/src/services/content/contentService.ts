@@ -1,6 +1,6 @@
 import { store } from '@/store';
-import { setModuleAvailability, setPhrases, setTopics, setVocabulary } from '@/store/slices/contentSlice';
-import { mockTopics, mockVocabulary, mockPhrases } from './mockData';
+import { setHundredSeconds, setModuleAvailability, setPhrases, setTopics, setVocabulary } from '@/store/slices/contentSlice';
+import { mockTopics, mockVocabulary, mockPhrases, mockHundredSeconds } from './mockData';
 
 export function loadMockContent() {
   store.dispatch(setTopics(mockTopics));
@@ -10,11 +10,12 @@ export function loadMockContent() {
   Object.entries(mockPhrases).forEach(([topicId, items]) => {
     store.dispatch(setPhrases({ topicId, items }));
   });
+  store.dispatch(setHundredSeconds(mockHundredSeconds));
   store.dispatch(
     setModuleAvailability({
       vocabulary: true,
       phrases: true,
-      hundredSeconds: false,
+      hundredSeconds: true,
     }),
   );
 }

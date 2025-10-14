@@ -20,6 +20,10 @@ export function usePhrasesForTopic(topicId: string) {
   return useAppSelector((state) => state.content.phrasesByTopic[topicId] ?? []);
 }
 
+export function useHundredSecondsItems() {
+  return useAppSelector((state) => state.content.hundredSeconds);
+}
+
 export function useModuleAvailability() {
   return useAppSelector((state) => state.content.modules);
 }

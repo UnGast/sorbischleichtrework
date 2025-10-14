@@ -26,3 +26,9 @@ export interface PhraseItem {
   germanAudio?: string;
   sorbianAudio?: string;
 }
+
+export interface HundredSecondsItem {
+  id: string;
+  name: string;
+  audio: string;
+}
