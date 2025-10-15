@@ -1,5 +1,6 @@
 import { PropsWithChildren } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, ViewProps } from 'react-native';
+import { ScrollView, StyleSheet, View, ViewProps } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface ScreenProps extends ViewProps {
   scrollable?: boolean;
@@ -12,7 +13,7 @@ export function Screen({ children, scrollable = false, padded = true, style, ...
       {children}
     </ScrollView>
   ) : (
-    <SafeAreaView style={[styles.root, padded && styles.padded, style]} {...rest}>
+    <SafeAreaView /*style={[styles.root, padded && styles.padded, style]}*/ {...rest}>
       {children}
     </SafeAreaView>
   );

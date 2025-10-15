@@ -1,21 +1,29 @@
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useMemo } from 'react';
+import { useLocalSearchParams, useGlobalSearchParams } from 'expo-router';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '@/components/common/Screen';
-import { useTopicsByType, useVocabularyMap } from '@/services/content/contentRepository';
-import { VocabularyStackParamList } from './VocabularyNavigator';
+import { useVocabularyForTopic } from '@/services/content/contentRepository';
 
 import PlaceholderImage from '@assets/images/Fotolia_46575927_S.jpg';
 
-type Props = NativeStackScreenProps<VocabularyStackParamList, 'VocabularyRead'>;
+type Params = {
+  itemId?: string;
+};
 
-export function VocabularyReadScreen({ route }: Props) {
-  const { itemId } = route.params;
-  const topics = useTopicsByType('vocabulary');
-  const vocabularyMap = useVocabularyMap();
+export default function VocabularyReadRoute() {
+  const { topicId } = useLocalSearchParams<{ topicId: string }>();
+  const { itemId } = useGlobalSearchParams<Params>();
+  const items = useVocabularyForTopic(topicId ?? '');
 
-  const firstTopicId = topics[0]?.id;
-  const items = firstTopicId ? vocabularyMap[firstTopicId] ?? [] : [];
-  const item = items.find((entry) => entry.id === itemId) ?? items[0];
+  const item = useMemo(() => {
+    if (items.length === 0) {
+      return undefined;
+    }
+    if (!itemId) {
+      return items[0];
+    }
+    return items.find((entry) => entry.id === itemId) ?? items[0];
+  }, [itemId, items]);
 
   if (!item) {
     return (

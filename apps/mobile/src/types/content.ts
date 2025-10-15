@@ -1,21 +1,24 @@
 export type TopicType = 'vocabulary' | 'phrases' | 'hundredSeconds';
 
-export interface ContentTopic {
+export interface Topic {
   id: string;
   type: TopicType;
   nameGerman: string;
   nameSorbian: string;
   icon?: string;
-  description?: string;
+  audioIntroSorbian?: string;
+  order: number;
 }
 
-export interface VocabularyItem {
+export interface VocabItem {
   id: string;
   topicId: string;
   textGerman: string;
   textSorbian: string;
-  image?: string;
+  img?: string;
   audioSorbian?: string;
+  ignoreAssign?: boolean;
+  ignoreWrite?: boolean;
 }
 
 export interface PhraseItem {
@@ -25,10 +28,29 @@ export interface PhraseItem {
   sorbianText: string;
   germanAudio?: string;
   sorbianAudio?: string;
+  type?: 'normal' | 'separator';
+  infoText?: string;
 }
 
-export interface HundredSecondsItem {
+export interface HundredSecItem {
   id: string;
   name: string;
   audio: string;
+  image?: string;
+}
+
+export type EntityType = 'vocab' | 'phrase' | 'topic' | 'hundred';
+
+export interface ProgressEntry {
+  entityId: string;
+  entityType: EntityType;
+  attempts: number;
+  correct: number;
+  lastSeenAt: number;
+}
+
+export interface ModuleAvailability {
+  vocabulary: boolean;
+  phrases: boolean;
+  hundredSeconds: boolean;
 }

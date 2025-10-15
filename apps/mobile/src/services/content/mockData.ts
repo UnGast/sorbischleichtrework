@@ -1,35 +1,38 @@
-import { ContentTopic, VocabularyItem, PhraseItem, HundredSecondsItem } from '@/types/content';
+import { Topic, VocabItem, PhraseItem, HundredSecItem } from '@/types/content';
 
-export const mockTopics: ContentTopic[] = [
+export const mockTopics: Topic[] = [
   {
     id: 'vocab-01',
     type: 'vocabulary',
     nameGerman: 'Begrüßung und Verabschiedung',
     nameSorbian: 'Postrowjenje a rozžohnowanje',
     icon: 'lektion1.png',
+    order: 1,
   },
   {
     id: 'phrases-01',
     type: 'phrases',
     nameGerman: 'Alltagssätze',
     nameSorbian: 'Wšědne sady',
+    order: 2,
   },
   {
     id: 'hundred-01',
     type: 'hundredSeconds',
     nameGerman: 'Sorbisch in 100 Sekunden',
     nameSorbian: 'Serbsce za 100 sekundow',
+    order: 3,
   },
 ];
 
-export const mockVocabulary: Record<string, VocabularyItem[]> = {
+export const mockVocabulary: Record<string, VocabItem[]> = {
   'vocab-01': [
     {
       id: 'voc-01-01',
       topicId: 'vocab-01',
       textGerman: 'Guten Morgen!',
       textSorbian: 'Dobre ranje!',
-      image: 'Fotolia_46575927_S.jpg',
+      img: 'Fotolia_46575927_S.jpg',
       audioSorbian: 'voc_snd_01_01s.mp3',
     },
     {
@@ -37,7 +40,7 @@ export const mockVocabulary: Record<string, VocabularyItem[]> = {
       topicId: 'vocab-01',
       textGerman: 'Guten Tag!',
       textSorbian: 'Dobry dźeń!',
-      image: 'Fotolia_35730691_S.jpg',
+      img: 'Fotolia_35730691_S.jpg',
       audioSorbian: 'voc_snd_01_02s.mp3',
     },
   ],
@@ -64,7 +67,7 @@ export const mockPhrases: Record<string, PhraseItem[]> = {
   ],
 };
 
-export const mockHundredSeconds: HundredSecondsItem[] = [
+export const mockHundredSeconds: HundredSecItem[] = [
   { id: 'hund-01', name: 'Begrüßung', audio: 'hundredsec1.mp3' },
   { id: 'hund-02', name: 'Verabschiedung', audio: 'hundredsec2.mp3' },
   { id: 'hund-03', name: 'Nett sein', audio: 'hundredsec3.mp3' },

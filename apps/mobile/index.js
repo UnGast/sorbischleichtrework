@@ -1,1 +1,1 @@
-import './src/index';
+import 'expo-router/entry';

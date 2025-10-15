@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native-screens/ios/RNSScreenStackHeaderConfig.mm b/node_modules/react-native-screens/ios/RNSScreenStackHeaderConfig.mm
+index a4e853c..fa9f57a 100644
+--- a/node_modules/react-native-screens/ios/RNSScreenStackHeaderConfig.mm
++++ b/node_modules/react-native-screens/ios/RNSScreenStackHeaderConfig.mm
+@@ -31,6 +31,8 @@
+ #import "RNSSearchBar.h"
+ #import "RNSUIBarButtonItem.h"
+ 
++#include <utility>
++
+ #ifdef RCT_NEW_ARCH_ENABLED
+ namespace react = facebook::react;
+ #endif // RCT_NEW_ARCH_ENABLED

@@ -1,18 +1,10 @@
-import { useEffect } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '@/components/common/Screen';
 import { AudioBar } from '@/components/common/AudioBar';
 import { useHundredSecondsItems } from '@/services/content/contentRepository';
-import { loadMockContent } from '@/services/content/contentService';
 
-export function HundredSecondsScreen() {
+export default function HundredSecondsRoute() {
   const items = useHundredSecondsItems();
-
-  useEffect(() => {
-    if (items.length === 0) {
-      loadMockContent();
-    }
-  }, [items.length]);
 
   return (
     <Screen>

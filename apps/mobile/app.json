@@ -41,7 +41,10 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-font",
+      "expo-router"
     ],
     "extra": {
       "eas": {

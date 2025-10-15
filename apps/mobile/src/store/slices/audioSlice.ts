@@ -1,0 +1,83 @@
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+export type PlaybackStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'buffering' | 'error';
+
+export interface QueueItem {
+  id: string;
+  title: string;
+  subtitle?: string;
+  entityId?: string;
+  entityType?: 'vocab' | 'phrase' | 'hundred';
+  logicalAsset?: string;
+  uri?: string;
+  durationSeconds?: number;
+}
+
+export interface AudioState {
+  status: PlaybackStatus;
+  currentItemId?: string;
+  queue: QueueItem[];
+  positionSeconds: number;
+  durationSeconds: number;
+  errorMessage?: string;
+  isAutoModeEnabled: boolean;
+}
+
+const initialState: AudioState = {
+  status: 'idle',
+  queue: [],
+  positionSeconds: 0,
+  durationSeconds: 0,
+  isAutoModeEnabled: false,
+};
+
+const audioSlice = createSlice({
+  name: 'audio',
+  initialState,
+  reducers: {
+    setAudioStatus(state, action: PayloadAction<PlaybackStatus>) {
+      state.status = action.payload;
+      if (action.payload !== 'error') {
+        state.errorMessage = undefined;
+      }
+    },
+    setAudioError(state, action: PayloadAction<string | undefined>) {
+      state.status = 'error';
+      state.errorMessage = action.payload;
+    },
+    setQueue(state, action: PayloadAction<QueueItem[]>) {
+      state.queue = action.payload;
+      state.currentItemId = action.payload[0]?.id;
+      state.positionSeconds = 0;
+      state.durationSeconds = action.payload[0]?.durationSeconds ?? 0;
+    },
+    setCurrentItem(state, action: PayloadAction<string | undefined>) {
+      state.currentItemId = action.payload;
+      const item = state.queue.find((entry) => entry.id === action.payload);
+      state.durationSeconds = item?.durationSeconds ?? 0;
+      state.positionSeconds = 0;
+    },
+    updatePosition(state, action: PayloadAction<{ positionSeconds: number; durationSeconds?: number }>) {
+      state.positionSeconds = action.payload.positionSeconds;
+      if (typeof action.payload.durationSeconds === 'number') {
+        state.durationSeconds = action.payload.durationSeconds;
+      }
+    },
+    toggleAutoMode(state, action: PayloadAction<boolean | undefined>) {
+      state.isAutoModeEnabled = action.payload ?? !state.isAutoModeEnabled;
+    },
+    resetAudioState: () => initialState,
+  },
+});
+
+export const {
+  setAudioStatus,
+  setAudioError,
+  setQueue,
+  setCurrentItem,
+  updatePosition,
+  toggleAutoMode,
+  resetAudioState,
+} = audioSlice.actions;
+export default audioSlice.reducer;
+

@@ -1,7 +1,22 @@
-import { useAppSelector } from '@/hooks/useAppSelector';
+import { useAppSelector } from '@/store';
+import { Topic } from '@/types/content';
+
+export function useContentSlice() {
+  return useAppSelector((state) => state.content);
+}
 
 export function useTopicsByType(type: 'vocabulary' | 'phrases' | 'hundredSeconds') {
-  return useAppSelector((state) => state.content.topics.filter((topic) => topic.type === type));
+  return useAppSelector((state) => {
+    const { topicOrder, topicsById } = state.content;
+    const filtered = topicOrder
+      .map((id) => topicsById[id])
+      .filter((topic): topic is Topic => !!topic && topic.type === type);
+    return filtered.length > 0 ? filtered : [];
+  });
+}
+
+export function useTopicById(topicId: string) {
+  return useAppSelector((state) => state.content.topicsById[topicId]);
 }
 
 export function useVocabularyMap() {
