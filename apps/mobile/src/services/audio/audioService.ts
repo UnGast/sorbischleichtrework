@@ -10,6 +10,7 @@ export interface AudioTrack {
   duration?: number;
   artwork?: string;
   logicalAsset?: string;
+  entityId?: string;
 }
 
 class AudioService {

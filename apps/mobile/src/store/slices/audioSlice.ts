@@ -16,6 +16,7 @@ export interface QueueItem {
 export interface AudioState {
   status: PlaybackStatus;
   currentItemId?: string;
+  currentTrackId?: string;
   queue: QueueItem[];
   positionSeconds: number;
   durationSeconds: number;
@@ -47,15 +48,33 @@ const audioSlice = createSlice({
     },
     setQueue(state, action: PayloadAction<QueueItem[]>) {
       state.queue = action.payload;
-      state.currentItemId = action.payload[0]?.id;
+      const first = action.payload[0];
+      state.currentTrackId = first?.id;
+      state.currentItemId = first?.entityId ?? first?.id;
       state.positionSeconds = 0;
-      state.durationSeconds = action.payload[0]?.durationSeconds ?? 0;
+      state.durationSeconds = first?.durationSeconds ?? 0;
     },
     setCurrentItem(state, action: PayloadAction<string | undefined>) {
       state.currentItemId = action.payload;
-      const item = state.queue.find((entry) => entry.id === action.payload);
-      state.durationSeconds = item?.durationSeconds ?? 0;
+      const item = state.queue.find((entry) => entry.entityId === action.payload || entry.id === action.payload);
+      if (item) {
+        state.currentTrackId = item.id;
+        state.durationSeconds = item.durationSeconds ?? 0;
+      }
       state.positionSeconds = 0;
+    },
+    setCurrentTrack(state, action: PayloadAction<string | undefined>) {
+      state.currentTrackId = action.payload;
+      if (!action.payload) {
+        state.currentItemId = undefined;
+        return;
+      }
+      const item = state.queue.find((entry) => entry.id === action.payload);
+      if (item) {
+        state.currentItemId = item.entityId ?? item.id;
+        state.durationSeconds = item.durationSeconds ?? 0;
+        state.positionSeconds = 0;
+      }
     },
     updatePosition(state, action: PayloadAction<{ positionSeconds: number; durationSeconds?: number }>) {
       state.positionSeconds = action.payload.positionSeconds;
@@ -75,6 +94,7 @@ export const {
   setAudioError,
   setQueue,
   setCurrentItem,
+  setCurrentTrack,
   updatePosition,
   toggleAutoMode,
   resetAudioState,

@@ -2,19 +2,19 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Screen } from '@/components/common/Screen';
-import { usePhrasesForTopic } from '@/services/content/contentRepository';
+import { usePhrasesForTopic, useTopicById } from '@/services/content/contentRepository';
 import { useAudioPlayback } from '@/hooks/useAudioPlayback';
-import { useAppDispatch } from '@/store';
+import { useAppDispatch, useAppSelector } from '@/store';
 import { recordAction } from '@/store/slices/progressSlice';
-import { AudioBar } from '@/components/common/AudioBar';
 
 export default function PhraseTopicRoute() {
   const { topicId } = useLocalSearchParams<{ topicId: string }>();
   const phrases = usePhrasesForTopic(topicId ?? '');
-  const audioPlayback = useAudioPlayback();
+  const topic = useTopicById(topicId ?? '');
+  const { playTrack, setQueueWithAutoMode, togglePlay, isPlaying, currentItemId } = useAudioPlayback();
+  const primaryLanguage = useAppSelector((state) => state.settings.phrasesPrimaryLanguage);
   const dispatch = useAppDispatch();
   const [autoMode, setAutoMode] = useState(false);
-  const [currentPlayingIndex, setCurrentPlayingIndex] = useState<number | null>(null);
 
   const data = useMemo(() => phrases, [phrases]);
 
@@ -34,16 +34,17 @@ export default function PhraseTopicRoute() {
   }, [dispatch, topicId]);
 
   const playPhrase = useCallback(
-    async (phrase: any, index: number) => {
+    async (phrase: any) => {
       if (!phrase.sorbianAudio && !phrase.germanAudio) return;
       const audioFile = phrase.sorbianAudio || phrase.germanAudio;
       if (!audioFile) return;
 
-      await audioPlayback.playTrack({
+      await playTrack({
         id: phrase.id,
         title: phrase.germanText,
         subtitle: phrase.sorbianText,
         url: audioFile,
+        entityId: phrase.id,
       });
 
       dispatch(
@@ -57,16 +58,72 @@ export default function PhraseTopicRoute() {
       );
 
       console.log(`Playing phrase ${phrase.id} with audio ${audioFile}`);
-      setCurrentPlayingIndex(index);
     },
-    [audioPlayback, dispatch],
+    [dispatch, playTrack],
   );
 
-  const startAutoMode = useCallback(() => {
+  const startAutoMode = useCallback(async () => {
     if (data.length === 0 || !topicId) {
       return;
     }
     setAutoMode(true);
+
+    const tracks = data
+      .flatMap((phrase) => {
+        const entries = [] as {
+          id: string;
+          title: string;
+          subtitle: string;
+          url: string;
+          entityId: string;
+        }[];
+
+        if (primaryLanguage === 'sb' && phrase.sorbianAudio) {
+          entries.push({
+            id: `${phrase.id}-sb`,
+            title: phrase.sorbianText,
+            subtitle: phrase.germanText,
+            url: phrase.sorbianAudio,
+            entityId: phrase.id,
+          });
+        }
+
+        if (phrase.germanAudio) {
+          entries.push({
+            id: `${phrase.id}-de`,
+            title: phrase.germanText,
+            subtitle: phrase.sorbianText,
+            url: phrase.germanAudio,
+            entityId: phrase.id,
+          });
+        }
+
+        if (primaryLanguage === 'de' && phrase.sorbianAudio) {
+          entries.push({
+            id: `${phrase.id}-sb`,
+            title: phrase.sorbianText,
+            subtitle: phrase.germanText,
+            url: phrase.sorbianAudio,
+            entityId: phrase.id,
+          });
+        }
+
+        if (!entries.length && phrase.sorbianAudio) {
+          entries.push({
+            id: `${phrase.id}-sb`,
+            title: phrase.sorbianText,
+            subtitle: phrase.germanText,
+            url: phrase.sorbianAudio,
+            entityId: phrase.id,
+          });
+        }
+
+        return entries;
+      })
+      .filter((track) => track.url);
+
+    await setQueueWithAutoMode(tracks, 0, true);
+
     dispatch(
       recordAction({
         id: `phrase-auto-${topicId}-${Date.now()}`,
@@ -77,14 +134,13 @@ export default function PhraseTopicRoute() {
       }),
     );
     console.log('Starting auto mode for phrase topic');
-  }, [data.length, dispatch, topicId]);
+  }, [data, dispatch, setQueueWithAutoMode, topicId]);
 
   const stopAutoMode = useCallback(() => {
     if (!topicId) {
       return;
     }
     setAutoMode(false);
-    setCurrentPlayingIndex(null);
     dispatch(
       recordAction({
         id: `phrase-finish-${topicId}-${Date.now()}`,
@@ -94,8 +150,10 @@ export default function PhraseTopicRoute() {
         entityType: 'topic',
       }),
     );
-    audioPlayback.togglePlay();
-  }, [audioPlayback, dispatch, topicId]);
+    if (isPlaying) {
+      togglePlay();
+    }
+  }, [dispatch, isPlaying, togglePlay, topicId]);
 
   if (data.length === 0) {
     return (
@@ -108,7 +166,7 @@ export default function PhraseTopicRoute() {
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={styles.title}>Phrasen</Text>
+        <Text style={styles.title}>{topic?.nameGerman || 'Phrasen'}</Text>
         <TouchableOpacity
           style={[styles.modeButton, autoMode && styles.modeButtonActive]}
           onPress={autoMode ? stopAutoMode : startAutoMode}
@@ -122,10 +180,10 @@ export default function PhraseTopicRoute() {
       <FlatList
         data={data}
         keyExtractor={(item) => item.id}
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <TouchableOpacity
-            style={[styles.item, currentPlayingIndex === index && styles.itemPlaying]}
-            onPress={() => playPhrase(item, index)}
+            style={[styles.item, currentItemId === item.id && styles.itemPlaying]}
+            onPress={() => playPhrase(item)}
             disabled={autoMode}
           >
             <Text style={styles.primary}>{item.germanText}</Text>

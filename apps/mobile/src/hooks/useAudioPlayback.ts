@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
-import TrackPlayer, { State as TrackPlayerState } from 'react-native-track-player';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import TrackPlayer, { Event as TrackPlayerEvent, State as TrackPlayerState } from 'react-native-track-player';
+import { useTrackPlayerEvents } from 'react-native-track-player';
 import { audioService, AudioTrack } from '@/services/audio/audioService';
 import { useAppDispatch, useAppSelector } from '@/store';
 import {
   setAudioStatus,
   updatePosition,
   setQueue,
-  setCurrentItem,
+  setCurrentTrack,
   toggleAutoMode,
 } from '@/store/slices/audioSlice';
 
@@ -14,35 +15,85 @@ export function useAudioPlayback() {
   const dispatch = useAppDispatch();
   const audioState = useAppSelector((state) => state.audio);
   const [playerState, setPlayerState] = useState<TrackPlayerState>(TrackPlayerState.None);
+  const audioStateRef = useRef(audioState);
+  const positionIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     audioService.init();
   }, []);
 
   useEffect(() => {
-    // For now, we'll use polling to get playback state until we fix the event listener API
-    const interval = setInterval(async () => {
-      try {
-        const state = await TrackPlayer.getState();
-        setPlayerState(state);
-        const status =
-          state === TrackPlayerState.Playing
-            ? 'playing'
-            : state === TrackPlayerState.Paused
-              ? 'paused'
-              : 'idle';
-        dispatch(setAudioStatus(status));
+    audioStateRef.current = audioState;
+  }, [audioState]);
 
-        const position = await TrackPlayer.getPosition();
-        const duration = await TrackPlayer.getDuration();
+  const handlePlaybackState = useCallback(
+    (event: { state: TrackPlayerState }) => {
+      setPlayerState(event.state);
+
+      const status =
+        event.state === TrackPlayerState.Playing
+          ? 'playing'
+          : event.state === TrackPlayerState.Paused
+            ? 'paused'
+            : 'idle';
+
+      dispatch(setAudioStatus(status));
+
+      if (
+        (event.state === TrackPlayerState.Stopped || event.state === TrackPlayerState.None) &&
+        audioStateRef.current.currentTrackId
+      ) {
+        dispatch(setCurrentTrack(undefined));
+      }
+    },
+    [dispatch],
+  );
+
+  const handleTrackChanged = useCallback(
+    (event: { nextTrack?: number | null }) => {
+      if (typeof event.nextTrack === 'number') {
+        const nextEntry = audioStateRef.current.queue[event.nextTrack];
+        if (nextEntry) {
+          dispatch(setCurrentTrack(nextEntry.id));
+        }
+      } else {
+        dispatch(setCurrentTrack(undefined));
+      }
+    },
+    [dispatch],
+  );
+
+  const handleQueueEnded = useCallback(() => {
+    dispatch(setCurrentTrack(undefined));
+  }, [dispatch]);
+
+  useTrackPlayerEvents([TrackPlayerEvent.PlaybackState], handlePlaybackState);
+  useTrackPlayerEvents([TrackPlayerEvent.PlaybackTrackChanged], handleTrackChanged);
+  useTrackPlayerEvents([TrackPlayerEvent.PlaybackQueueEnded], handleQueueEnded);
+
+  useEffect(() => {
+    if (positionIntervalRef.current) {
+      clearInterval(positionIntervalRef.current);
+    }
+
+    positionIntervalRef.current = setInterval(async () => {
+      try {
+        const [position, duration] = await Promise.all([
+          TrackPlayer.getPosition(),
+          TrackPlayer.getDuration(),
+        ]);
+
         dispatch(updatePosition({ positionSeconds: position, durationSeconds: duration }));
       } catch (error) {
-        console.warn('Error getting playback state:', error);
+        console.warn('Error getting playback progress', error);
       }
-    }, 1000);
+    }, 500);
 
     return () => {
-      clearInterval(interval);
+      if (positionIntervalRef.current) {
+        clearInterval(positionIntervalRef.current);
+        positionIntervalRef.current = null;
+      }
     };
   }, [dispatch]);
 
@@ -51,14 +102,17 @@ export function useAudioPlayback() {
   const playTrack = async (track: AudioTrack) => {
     await audioService.loadTrack(track);
     dispatch(setQueue([track]));
-    dispatch(setCurrentItem(track.id));
+    dispatch(setCurrentTrack(track.id));
     await audioService.play();
   };
 
   const ensureQueue = async (tracks: AudioTrack[], startIndex = 0) => {
     await audioService.setQueue(tracks, startIndex);
     dispatch(setQueue(tracks));
-    dispatch(setCurrentItem(tracks[startIndex]?.id));
+    const initialTrack = tracks[startIndex];
+    if (initialTrack) {
+      dispatch(setCurrentTrack(initialTrack.id));
+    }
   };
 
   const togglePlay = async () => {
@@ -87,6 +141,7 @@ export function useAudioPlayback() {
     isPlaying,
     status: audioState.status,
     currentItemId: audioState.currentItemId,
+    currentTrackId: audioState.currentTrackId,
     positionSeconds: audioState.positionSeconds,
     durationSeconds: audioState.durationSeconds,
     queue: audioState.queue,
