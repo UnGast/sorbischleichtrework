@@ -33,7 +33,7 @@ export const mockVocabulary: Record<string, VocabItem[]> = {
       textGerman: 'Guten Morgen!',
       textSorbian: 'Dobre ranje!',
       img: 'Fotolia_46575927_S.jpg',
-      audioSorbian: 'voc_snd_01_01s.mp3',
+      audioSorbian: 'audio/mock.mp3',
     },
     {
       id: 'voc-01-02',
@@ -41,7 +41,7 @@ export const mockVocabulary: Record<string, VocabItem[]> = {
       textGerman: 'Guten Tag!',
       textSorbian: 'Dobry dźeń!',
       img: 'Fotolia_35730691_S.jpg',
-      audioSorbian: 'voc_snd_01_02s.mp3',
+      audioSorbian: 'audio/mock.mp3',
     },
   ],
 };
@@ -53,24 +53,24 @@ export const mockPhrases: Record<string, PhraseItem[]> = {
       topicId: 'phrases-01',
       germanText: 'Wie geht es dir?',
       sorbianText: 'Kak so maš?',
-      germanAudio: 'phr_01_01_de.mp3',
-      sorbianAudio: 'phr_01_01_sb.mp3',
+      germanAudio: 'audio/mock.mp3',
+      sorbianAudio: 'audio/mock.mp3',
     },
     {
       id: 'phr-01-02',
       topicId: 'phrases-01',
       germanText: 'Mir geht es gut.',
       sorbianText: 'Mě so dobre dari.',
-      germanAudio: 'phr_01_02_de.mp3',
-      sorbianAudio: 'phr_01_02_sb.mp3',
+      germanAudio: 'audio/mock.mp3',
+      sorbianAudio: 'audio/mock.mp3',
     },
   ],
 };
 
 export const mockHundredSeconds: HundredSecItem[] = [
-  { id: 'hund-01', name: 'Begrüßung', audio: 'hundredsec1.mp3' },
-  { id: 'hund-02', name: 'Verabschiedung', audio: 'hundredsec2.mp3' },
-  { id: 'hund-03', name: 'Nett sein', audio: 'hundredsec3.mp3' },
-  { id: 'hund-04', name: 'Kiosk', audio: 'hundredsec4.mp3' },
-  { id: 'hund-05', name: 'Liebe', audio: 'hundredsec5.mp3' },
+  { id: 'hund-01', name: 'Begrüßung', audio: 'audio/mock.mp3' },
+  { id: 'hund-02', name: 'Verabschiedung', audio: 'audio/mock.mp3' },
+  { id: 'hund-03', name: 'Nett sein', audio: 'audio/mock.mp3' },
+  { id: 'hund-04', name: 'Kiosk', audio: 'audio/mock.mp3' },
+  { id: 'hund-05', name: 'Liebe', audio: 'audio/mock.mp3' },
 ];

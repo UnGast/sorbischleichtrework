@@ -39,6 +39,13 @@ export default function PhraseTopicRoute() {
       const audioFile = phrase.sorbianAudio || phrase.germanAudio;
       if (!audioFile) return;
 
+      await audioPlayback.playTrack({
+        id: phrase.id,
+        title: phrase.germanText,
+        subtitle: phrase.sorbianText,
+        url: audioFile,
+      });
+
       dispatch(
         recordAction({
           id: `phrase-play-${phrase.id}-${Date.now()}`,
@@ -52,7 +59,7 @@ export default function PhraseTopicRoute() {
       console.log(`Playing phrase ${phrase.id} with audio ${audioFile}`);
       setCurrentPlayingIndex(index);
     },
-    [dispatch],
+    [audioPlayback, dispatch],
   );
 
   const startAutoMode = useCallback(() => {
@@ -131,7 +138,6 @@ export default function PhraseTopicRoute() {
         )}
       />
 
-      <AudioBar />
     </Screen>
   );
 }

@@ -1,6 +1,9 @@
 import { Directory, File, Paths } from 'expo-file-system';
+import { Asset } from 'expo-asset';
 import { ModuleAvailability, Topic, VocabItem, PhraseItem, HundredSecItem } from '@/types/content';
 import { mockHundredSeconds, mockPhrases, mockTopics, mockVocabulary } from './mockData';
+
+const MOCK_AUDIO_MODULE = require('@assets/audio/mock.mp3');
 
 export interface PackSummary {
   packId: string;
@@ -42,6 +45,7 @@ async function readJsonFile<T>(file: File): Promise<T | null> {
 class PackManager {
   private initialized = false;
   private availablePacks: PackSummary[] = [];
+  private activePack: PackSummary | null = null;
 
   async init(): Promise<void> {
     if (this.initialized) {
@@ -82,6 +86,16 @@ class PackManager {
 
     const manifestFile = new File(packDir, 'pack.json');
     const contentFile = new File(packDir, 'content.json');
+    const audioDir = new Directory(packDir, 'audio');
+
+    try {
+      if (!audioDir.exists) {
+        audioDir.create({ intermediates: true, idempotent: true });
+      }
+    } catch (err) {
+      console.warn('[packManager] Failed to create dummy audio directory', err);
+      return;
+    }
 
     const manifest: PackManifest & { contentFile: string } = {
       packId,
@@ -107,8 +121,36 @@ class PackManager {
       manifestFile.write(JSON.stringify(manifest, null, 2));
       contentFile.create({ overwrite: true });
       contentFile.write(JSON.stringify(content, null, 2));
+      await this.writeMockAudioIfNeeded(audioDir);
     } catch (err) {
       console.warn('[packManager] Failed to write dummy pack files', err);
+    }
+  }
+
+  private async writeMockAudioIfNeeded(audioDir: Directory) {
+    const targetFile = new File(audioDir, 'mock.mp3');
+    if (targetFile.exists) {
+      console.log('[packManager] Overwriting existing mock audio to keep dev assets fresh');
+      try {
+        targetFile.delete();
+      } catch (err) {
+        console.warn('[packManager] Failed to remove existing mock audio', err);
+      }
+    }
+
+    try {
+      const asset = Asset.fromModule(MOCK_AUDIO_MODULE);
+      await asset.downloadAsync();
+      if (!asset.localUri) {
+        throw new Error('Mock audio asset has no local URI after download');
+      }
+
+      const sourceFile = new File(asset.localUri);
+      sourceFile.copy(targetFile);
+
+      console.log(`[packManager] Copied mock audio into ${targetFile.uri}`);
+    } catch (error) {
+      console.warn('[packManager] Failed to copy mock audio into dev pack', error);
     }
   }
 
@@ -119,8 +161,18 @@ class PackManager {
     return this.availablePacks;
   }
 
-  async activatePack(_packId: string): Promise<void> {
-    // No-op for now; will set active DB in future.
+  async activatePack(packId: string): Promise<void> {
+    if (!this.initialized) {
+      await this.init();
+    }
+
+    const summary = this.availablePacks.find((entry) => entry.packId === packId);
+    if (summary) {
+      this.activePack = summary;
+    } else {
+      console.warn(`[packManager] Tried to activate missing pack ${packId}`);
+      this.activePack = null;
+    }
   }
 
   async getModuleAvailability(packId: string): Promise<ModuleAvailability> {
@@ -132,6 +184,20 @@ class PackManager {
         hundredSeconds: false,
       }
     );
+  }
+
+  resolveAssetUri(logicalPath: string): string | null {
+    if (!this.activePack) {
+      return null;
+    }
+
+    const file = new File(this.activePack.packDir, logicalPath);
+    if (!file.exists) {
+      console.warn(`[packManager] Missing asset for path "${logicalPath}" (expected at ${file.uri})`);
+      return null;
+    }
+
+    return file.uri;
   }
 
   async getPackManifest(packId: string): Promise<(PackManifest & { contentFile?: string }) | null> {
