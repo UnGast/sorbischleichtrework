@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useAppSelector } from '@/store';
-import { Topic, VocabItem } from '@/types/content';
+import { Topic, VocabItem, HundredSecItem } from '@/types/content';
 import { packManager } from './packManager';
 
 export function useContentSlice() {
@@ -59,8 +59,26 @@ export function usePhrasesForTopic(topicId: string) {
   return useAppSelector((state) => state.content.phrasesByTopic[topicId] ?? []);
 }
 
-export function useHundredSecondsItems() {
-  return useAppSelector((state) => state.content.hundredSeconds);
+export interface ResolvedHundredSecItem extends HundredSecItem {
+  audioUri?: string;
+  imageUri?: string;
+}
+
+export function useHundredSecondsItems(): ResolvedHundredSecItem[] {
+  const items = useAppSelector((state) => state.content.hundredSeconds);
+
+  return useMemo(() => {
+    return items.map((item) => {
+      const audioUri = item.audio ? packManager.resolveAssetUri(item.audio) ?? item.audio : undefined;
+      const imageUri = item.image ? packManager.resolveAssetUri(item.image) ?? item.image : undefined;
+
+      return {
+        ...item,
+        audioUri,
+        imageUri,
+      };
+    });
+  }, [items]);
 }
 
 export function useModuleAvailability() {

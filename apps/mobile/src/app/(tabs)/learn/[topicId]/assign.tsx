@@ -7,7 +7,8 @@ import { useResolvedVocabularyForTopic } from '@/services/content/contentReposit
 import { useAudioPlayback } from '@/hooks/useAudioPlayback';
 import { useAppDispatch } from '@/store';
 import { setStep } from '@/services/content/vocabularySessionSlice';
-import { recordAction } from '@/store/slices/progressSlice';
+import { logProgressActivity, recordProgressAttempt } from '@/store/slices/progressSlice';
+import { useActivePackId } from '@/hooks/useActivePackId';
 
 const OPTION_WIDTH = Dimensions.get('window').width - 48;
 
@@ -23,6 +24,7 @@ export default function VocabularyAssignRoute() {
   const playback = useAudioPlayback();
   const vocabItems = useResolvedVocabularyForTopic(topicId ?? '');
   const dispatch = useAppDispatch();
+  const activePackId = useActivePackId();
 
   const prompts = useMemo(() => vocabItems.filter((item) => !item.ignoreAssign), [vocabItems]);
 
@@ -65,6 +67,30 @@ export default function VocabularyAssignRoute() {
         return;
       }
 
+      if (activePackId) {
+        const attemptId = `${currentItem.id}#assign`;
+        void dispatch(
+          recordProgressAttempt({
+            packId: activePackId,
+            entityId: attemptId,
+            entityType: 'vocab',
+            correct: option.isCorrect,
+          }),
+        );
+
+        void dispatch(
+          logProgressActivity({
+            packId: activePackId,
+            id: `assign-attempt-${attemptId}-${Date.now()}`,
+            ts: Date.now(),
+            kind: 'complete_item',
+            entityId: currentItem.id,
+            entityType: 'vocab',
+            metadata: { exercise: 'assign', correct: option.isCorrect },
+          }),
+        );
+      }
+
       if (option.isCorrect) {
         setFeedback('correct');
 
@@ -90,7 +116,7 @@ export default function VocabularyAssignRoute() {
         setTimeout(() => setFeedback(null), 800);
       }
     },
-    [completed, currentItem, playback, totalCount],
+    [activePackId, completed, currentItem, dispatch, playback, totalCount],
   );
 
   useEffect(() => {
@@ -102,18 +128,21 @@ export default function VocabularyAssignRoute() {
   const navigateToWrite = useCallback(() => {
     if (topicId) {
       dispatch(setStep({ topicId, step: 'write' }));
-      dispatch(
-        recordAction({
-          id: `vocab-write-start-${topicId}-${Date.now()}`,
-          ts: Date.now(),
-          kind: 'start_writing',
-          entityId: topicId,
-          entityType: 'topic',
-        }),
-      );
+      if (activePackId) {
+        void dispatch(
+          logProgressActivity({
+            packId: activePackId,
+            id: `vocab-write-start-${topicId}-${Date.now()}`,
+            ts: Date.now(),
+            kind: 'start_writing',
+            entityId: topicId,
+            entityType: 'topic',
+          }),
+        );
+      }
     }
     router.push({ pathname: `/learn/${topicId}/write` });
-  }, [dispatch, router, topicId]);
+  }, [activePackId, dispatch, router, topicId]);
 
   if (prompts.length === 0) {
     return (

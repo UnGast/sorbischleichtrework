@@ -14,11 +14,11 @@ export default function TabsLayout() {
         tabBarStyle: { backgroundColor: '#0F1115' },
         tabBarIcon: ({ color, size }) => {
           const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
-            learn: 'book',
-            phrases: 'musical-notes',
-            hundred: 'timer',
-            search: 'search',
-            settings: 'settings',
+            learn: 'book-outline',
+            phrases: 'musical-notes-outline',
+            hundred: 'radio-outline',
+            search: 'search-outline',
+            about: 'information-circle-outline',
           };
 
           const iconName = iconMap[route.name] ?? 'ellipse';
@@ -36,7 +36,7 @@ export default function TabsLayout() {
         <Tabs.Screen name="hundred" options={{ title: '100 Sekunden' }} />
       ) : null}
       <Tabs.Screen name="search" options={{ title: 'Suche' }} />
-      <Tabs.Screen name="settings" options={{ title: 'Einstellungen' }} />
+      <Tabs.Screen name="about" options={{ title: 'Über' }} />
     </Tabs>
   );
 }

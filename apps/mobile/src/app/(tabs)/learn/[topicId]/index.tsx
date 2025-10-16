@@ -12,7 +12,8 @@ import { useResolvedVocabularyForTopic } from '@/services/content/contentReposit
 import { useAudioPlayback } from '@/hooks/useAudioPlayback';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { setPosition, setStep } from '@/services/content/vocabularySessionSlice';
-import { recordAction } from '@/store/slices/progressSlice';
+import { logProgressActivity } from '@/store/slices/progressSlice';
+import { useActivePackId } from '@/hooks/useActivePackId';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 48;
@@ -28,6 +29,7 @@ export default function VocabularyReadRoute() {
   const items = useResolvedVocabularyForTopic(topicId ?? '');
   const playback = useAudioPlayback();
   const dispatch = useAppDispatch();
+  const activePackId = useActivePackId();
   const storedPosition = useAppSelector((state) => (topicId ? state.vocabularySession.positions[topicId] : 0));
   const [index, setIndex] = useState(storedPosition ?? 0);
   const translateX = useSharedValue(0);
@@ -44,11 +46,12 @@ export default function VocabularyReadRoute() {
   }, [items, itemId]);
 
   useEffect(() => {
-    if (!topicId) {
+    if (!topicId || !activePackId) {
       return;
     }
-    dispatch(
-      recordAction({
+    void dispatch(
+      logProgressActivity({
+        packId: activePackId,
         id: `vocab-read-start-${topicId}-${Date.now()}`,
         ts: Date.now(),
         kind: 'start_reading',
@@ -56,8 +59,7 @@ export default function VocabularyReadRoute() {
         entityType: 'topic',
       }),
     );
-    translateX.value = withTiming(-index * CARD_WIDTH, { duration: 200, easing: Easing.out(Easing.quad) });
-  }, [dispatch, topicId]);
+  }, [activePackId, dispatch, topicId]);
 
   useEffect(() => {
     translateX.value = withTiming(-index * CARD_WIDTH, { duration: 200, easing: Easing.out(Easing.quad) });
@@ -93,18 +95,21 @@ export default function VocabularyReadRoute() {
   const navigateToAssign = useCallback(() => {
     if (topicId) {
       dispatch(setStep({ topicId, step: 'assign' }));
-      dispatch(
-        recordAction({
-          id: `vocab-assign-start-${topicId}-${Date.now()}`,
-          ts: Date.now(),
-          kind: 'start_assigning',
-          entityId: topicId,
-          entityType: 'topic',
-        }),
-      );
+      if (activePackId) {
+        void dispatch(
+          logProgressActivity({
+            packId: activePackId,
+            id: `vocab-assign-start-${topicId}-${Date.now()}`,
+            ts: Date.now(),
+            kind: 'start_assigning',
+            entityId: topicId,
+            entityType: 'topic',
+          }),
+        );
+      }
     }
     router.push({ pathname: `/learn/${topicId}/assign` });
-  }, [dispatch, router, topicId]);
+  }, [activePackId, dispatch, router, topicId]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],

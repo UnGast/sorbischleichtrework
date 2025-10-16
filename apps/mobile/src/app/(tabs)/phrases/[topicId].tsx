@@ -5,7 +5,8 @@ import { Screen } from '@/components/common/Screen';
 import { usePhrasesForTopic, useTopicById } from '@/services/content/contentRepository';
 import { useAudioPlayback } from '@/hooks/useAudioPlayback';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { recordAction } from '@/store/slices/progressSlice';
+import { logProgressActivity } from '@/store/slices/progressSlice';
+import { useActivePackId } from '@/hooks/useActivePackId';
 
 export default function PhraseTopicRoute() {
   const { topicId } = useLocalSearchParams<{ topicId: string }>();
@@ -15,6 +16,7 @@ export default function PhraseTopicRoute() {
   const primaryLanguage = useAppSelector((state) => state.settings.phrasesPrimaryLanguage);
   const dispatch = useAppDispatch();
   const [autoMode, setAutoMode] = useState(false);
+  const activePackId = useActivePackId();
 
   const data = useMemo(() => phrases, [phrases]);
 
@@ -22,16 +24,19 @@ export default function PhraseTopicRoute() {
     if (!topicId) {
       return;
     }
-    dispatch(
-      recordAction({
-        id: `phrase-topic-${topicId}-${Date.now()}`,
-        ts: Date.now(),
-        kind: 'start_topic',
-        entityId: topicId,
-        entityType: 'topic',
-      }),
-    );
-  }, [dispatch, topicId]);
+    if (activePackId) {
+      void dispatch(
+        logProgressActivity({
+          packId: activePackId,
+          id: `phrase-topic-${topicId}-${Date.now()}`,
+          ts: Date.now(),
+          kind: 'start_topic',
+          entityId: topicId,
+          entityType: 'topic',
+        }),
+      );
+    }
+  }, [activePackId, dispatch, topicId]);
 
   const playPhrase = useCallback(
     async (phrase: any) => {
@@ -47,15 +52,18 @@ export default function PhraseTopicRoute() {
         entityId: phrase.id,
       });
 
-      dispatch(
-        recordAction({
-          id: `phrase-play-${phrase.id}-${Date.now()}`,
-          ts: Date.now(),
-          kind: 'play_audio',
-          entityId: phrase.id,
-          entityType: 'phrase',
-        }),
-      );
+      if (activePackId) {
+        void dispatch(
+          logProgressActivity({
+            packId: activePackId,
+            id: `phrase-play-${phrase.id}-${Date.now()}`,
+            ts: Date.now(),
+            kind: 'play_audio',
+            entityId: phrase.id,
+            entityType: 'phrase',
+          }),
+        );
+      }
 
       console.log(`Playing phrase ${phrase.id} with audio ${audioFile}`);
     },
@@ -124,15 +132,18 @@ export default function PhraseTopicRoute() {
 
     await setQueueWithAutoMode(tracks, 0, true);
 
-    dispatch(
-      recordAction({
-        id: `phrase-auto-${topicId}-${Date.now()}`,
-        ts: Date.now(),
-        kind: 'enter_auto_mode',
-        entityId: topicId,
-        entityType: 'topic',
-      }),
-    );
+    if (activePackId) {
+      void dispatch(
+        logProgressActivity({
+          packId: activePackId,
+          id: `phrase-auto-${topicId}-${Date.now()}`,
+          ts: Date.now(),
+          kind: 'enter_auto_mode',
+          entityId: topicId,
+          entityType: 'topic',
+        }),
+      );
+    }
     console.log('Starting auto mode for phrase topic');
   }, [data, dispatch, setQueueWithAutoMode, topicId]);
 
@@ -141,15 +152,18 @@ export default function PhraseTopicRoute() {
       return;
     }
     setAutoMode(false);
-    dispatch(
-      recordAction({
-        id: `phrase-finish-${topicId}-${Date.now()}`,
-        ts: Date.now(),
-        kind: 'finish_topic',
-        entityId: topicId,
-        entityType: 'topic',
-      }),
-    );
+    if (activePackId) {
+      void dispatch(
+        logProgressActivity({
+          packId: activePackId,
+          id: `phrase-finish-${topicId}-${Date.now()}`,
+          ts: Date.now(),
+          kind: 'finish_topic',
+          entityId: topicId,
+          entityType: 'topic',
+        }),
+      );
+    }
     if (isPlaying) {
       togglePlay();
     }

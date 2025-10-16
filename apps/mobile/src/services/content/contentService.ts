@@ -10,6 +10,8 @@ import {
 import { setBootstrapStatus, setAppError, setActivePack } from '@/store/slices/appSlice';
 import { mockHundredSeconds, mockPhrases, mockTopics, mockVocabulary } from './mockData';
 import { packManager } from './packManager';
+import { progressDatabase } from '@/services/db/progressDatabase';
+import { loadProgressForPack } from '@/store/slices/progressSlice';
 
 export async function initializeContent() {
   const { dispatch } = store;
@@ -18,7 +20,7 @@ export async function initializeContent() {
   dispatch(setContentLoading(true));
 
   try {
-    await packManager.init();
+    await Promise.all([packManager.init(), progressDatabase.init()]);
 
     const availablePacks = await packManager.listAvailablePacks();
 
@@ -29,6 +31,7 @@ export async function initializeContent() {
     const activePack = availablePacks[0];
     dispatch(setActivePack(activePack.packId));
     await packManager.activatePack(activePack.packId);
+    await store.dispatch(loadProgressForPack(activePack.packId));
 
     const packData = await packManager.loadPackContent(activePack.packId);
 
@@ -65,8 +68,10 @@ export async function initializeContent() {
 export async function loadMockContent() {
   const { dispatch } = store;
 
+  await progressDatabase.init();
   dispatch(setTopics(mockTopics));
   dispatch(setActivePack('mock-pack'));
+  await store.dispatch(loadProgressForPack('mock-pack'));
   Object.entries(mockVocabulary).forEach(([topicId, items]) => {
     dispatch(setVocabulary({ topicId, items }));
   });

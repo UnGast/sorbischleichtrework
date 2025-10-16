@@ -68,9 +68,9 @@ export const mockPhrases: Record<string, PhraseItem[]> = {
 };
 
 export const mockHundredSeconds: HundredSecItem[] = [
-  { id: 'hund-01', name: 'Begrüßung', audio: 'audio/mock.mp3' },
-  { id: 'hund-02', name: 'Verabschiedung', audio: 'audio/mock.mp3' },
-  { id: 'hund-03', name: 'Nett sein', audio: 'audio/mock.mp3' },
-  { id: 'hund-04', name: 'Kiosk', audio: 'audio/mock.mp3' },
-  { id: 'hund-05', name: 'Liebe', audio: 'audio/mock.mp3' },
+  { id: 'hund-01', name: 'Begrüßung', audio: 'audio/mock.mp3', image: 'images/Fotolia_46575927_S.jpg' },
+  { id: 'hund-02', name: 'Verabschiedung', audio: 'audio/mock.mp3', image: 'images/Fotolia_35730691_S.jpg' },
+  { id: 'hund-03', name: 'Nett sein', audio: 'audio/mock.mp3', image: 'images/Fotolia_46575927_S.jpg' },
+  { id: 'hund-04', name: 'Kiosk', audio: 'audio/mock.mp3', image: 'images/Fotolia_35730691_S.jpg' },
+  { id: 'hund-05', name: 'Liebe', audio: 'audio/mock.mp3', image: 'images/Fotolia_46575927_S.jpg' },
 ];

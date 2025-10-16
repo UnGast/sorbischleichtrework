@@ -7,7 +7,12 @@ import { useResolvedVocabularyForTopic } from '@/services/content/contentReposit
 import { useAudioPlayback } from '@/hooks/useAudioPlayback';
 import { useAppDispatch } from '@/store';
 import { resetSession, setStep } from '@/services/content/vocabularySessionSlice';
-import { recordAction } from '@/store/slices/progressSlice';
+import {
+  logProgressActivity,
+  recordProgressAttempt,
+  setTopicCompletionStatus,
+} from '@/store/slices/progressSlice';
+import { useActivePackId } from '@/hooks/useActivePackId';
 
 type LetterTile = {
   id: string;
@@ -28,6 +33,7 @@ export default function VocabularyWriteRoute() {
   const playback = useAudioPlayback();
   const items = useResolvedVocabularyForTopic(topicId ?? '');
   const dispatch = useAppDispatch();
+  const activePackId = useActivePackId();
   const exercises = useMemo(() => items.filter((item) => !item.ignoreWrite), [items]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [availableTiles, setAvailableTiles] = useState<LetterTile[]>([]);
@@ -47,6 +53,22 @@ export default function VocabularyWriteRoute() {
       setSelectedTiles([]);
     }
   }, [currentItem]);
+
+  useEffect(() => {
+    if (!topicId || !activePackId) {
+      return;
+    }
+    dispatch(
+      logProgressActivity({
+        packId: activePackId,
+        id: `vocab-write-start-${topicId}-${Date.now()}`,
+        ts: Date.now(),
+        kind: 'start_writing',
+        entityId: topicId,
+        entityType: 'topic',
+      }),
+    );
+  }, [activePackId, dispatch, topicId]);
 
   const handleSelectTile = useCallback(
     (tileId: string) => {
@@ -98,6 +120,30 @@ export default function VocabularyWriteRoute() {
     const correct = normalized === expected;
     setIsCorrect(correct);
 
+    if (activePackId) {
+      const attemptId = `${currentItem.id}#write`;
+      void dispatch(
+        recordProgressAttempt({
+          packId: activePackId,
+          entityId: attemptId,
+          entityType: 'vocab',
+          correct,
+        }),
+      );
+
+      void dispatch(
+        logProgressActivity({
+          packId: activePackId,
+          id: `write-attempt-${attemptId}-${Date.now()}`,
+          ts: Date.now(),
+          kind: 'complete_item',
+          entityId: currentItem.id,
+          entityType: 'vocab',
+          metadata: { exercise: 'write', correct },
+        }),
+      );
+    }
+
     if (correct && currentItem.audioUri) {
       await playback.playTrack({
         id: `${currentItem.id}-write`,
@@ -108,27 +154,38 @@ export default function VocabularyWriteRoute() {
     }
   }, [answer, currentItem, playback]);
 
-  const goNext = useCallback(() => {
+  const goNext = useCallback(async () => {
     if (currentIndex === exercises.length - 1) {
       if (topicId) {
         dispatch(setStep({ topicId, step: 'complete' }));
         dispatch(resetSession(topicId));
-        dispatch(
-          recordAction({
-            id: `vocab-topic-complete-${topicId}-${Date.now()}`,
-            ts: Date.now(),
-            kind: 'finish_topic',
-            entityId: topicId,
-            entityType: 'topic',
-          }),
-        );
+        if (activePackId) {
+          void dispatch(
+            setTopicCompletionStatus({
+              packId: activePackId,
+              topicId,
+              completed: true,
+            }),
+          );
+
+          void dispatch(
+            logProgressActivity({
+              packId: activePackId,
+              id: `vocab-topic-complete-${topicId}-${Date.now()}`,
+              ts: Date.now(),
+              kind: 'finish_topic',
+              entityId: topicId,
+              entityType: 'topic',
+            }),
+          );
+        }
       }
-      router.back();
+      router.replace({ pathname: `/learn/${topicId}/complete` });
       return;
     }
     setIsCorrect(null);
     setCurrentIndex((prev) => Math.min(prev + 1, exercises.length - 1));
-  }, [currentIndex, dispatch, exercises.length, router, topicId]);
+  }, [activePackId, currentIndex, dispatch, exercises.length, router, topicId]);
 
   if (!currentItem) {
     return (

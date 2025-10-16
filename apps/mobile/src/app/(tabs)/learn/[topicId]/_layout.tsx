@@ -6,6 +6,7 @@ export default function TopicLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="assign" />
       <Stack.Screen name="write" />
+      <Stack.Screen name="complete" />
     </Stack>
   );
 }
