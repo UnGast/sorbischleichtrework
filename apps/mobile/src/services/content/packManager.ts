@@ -4,6 +4,10 @@ import { ModuleAvailability, Topic, VocabItem, PhraseItem, HundredSecItem } from
 import { mockHundredSeconds, mockPhrases, mockTopics, mockVocabulary } from './mockData';
 
 const MOCK_AUDIO_MODULE = require('@assets/audio/mock.mp3');
+const MOCK_IMAGE_MODULES: Record<string, number> = {
+  'Fotolia_46575927_S.jpg': require('@assets/images/Fotolia_46575927_S.jpg'),
+  'Fotolia_35730691_S.jpg': require('@assets/images/Fotolia_35730691_S.jpg'),
+};
 
 export interface PackSummary {
   packId: string;
@@ -87,10 +91,14 @@ class PackManager {
     const manifestFile = new File(packDir, 'pack.json');
     const contentFile = new File(packDir, 'content.json');
     const audioDir = new Directory(packDir, 'audio');
+    const imagesDir = new Directory(packDir, 'images');
 
     try {
       if (!audioDir.exists) {
         audioDir.create({ intermediates: true, idempotent: true });
+      }
+      if (!imagesDir.exists) {
+        imagesDir.create({ intermediates: true, idempotent: true });
       }
     } catch (err) {
       console.warn('[packManager] Failed to create dummy audio directory', err);
@@ -122,6 +130,7 @@ class PackManager {
       contentFile.create({ overwrite: true });
       contentFile.write(JSON.stringify(content, null, 2));
       await this.writeMockAudioIfNeeded(audioDir);
+      await this.ensureMockImages(imagesDir);
     } catch (err) {
       console.warn('[packManager] Failed to write dummy pack files', err);
     }
@@ -139,18 +148,63 @@ class PackManager {
     }
 
     try {
-      const asset = Asset.fromModule(MOCK_AUDIO_MODULE);
-      await asset.downloadAsync();
-      if (!asset.localUri) {
-        throw new Error('Mock audio asset has no local URI after download');
-      }
-
-      const sourceFile = new File(asset.localUri);
-      sourceFile.copy(targetFile);
-
+      await this.copyModuleAssetIntoFile(MOCK_AUDIO_MODULE, targetFile);
       console.log(`[packManager] Copied mock audio into ${targetFile.uri}`);
     } catch (error) {
       console.warn('[packManager] Failed to copy mock audio into dev pack', error);
+    }
+  }
+
+  private async ensureMockImages(imagesDir: Directory) {
+    for (const [fileName, moduleId] of Object.entries(MOCK_IMAGE_MODULES)) {
+      const targetFile = new File(imagesDir, fileName);
+
+      if (targetFile.exists) {
+        try {
+          targetFile.delete();
+        } catch (err) {
+          console.warn(`[packManager] Failed to remove existing mock image ${targetFile.uri}`, err);
+        }
+      }
+
+      try {
+        await this.copyModuleAssetIntoFile(moduleId, targetFile);
+        console.log(`[packManager] Copied mock image ${fileName} into ${targetFile.uri}`);
+      } catch (err) {
+        console.warn(`[packManager] Failed to copy mock image ${fileName} into dev pack`, err);
+      }
+    }
+  }
+
+  private async copyModuleAssetIntoFile(moduleId: number, targetFile: File) {
+    const asset = Asset.fromModule(moduleId);
+    await asset.downloadAsync();
+    if (!asset.localUri) {
+      throw new Error('Bundled asset has no local URI after download');
+    }
+
+    const sourceFile = new File(asset.localUri);
+    sourceFile.copy(targetFile);
+  }
+
+  private async ensureMockImages(imagesDir: Directory) {
+    if (!BUNDLED_IMAGES_DIR.exists) {
+      console.warn('[packManager] Bundled images directory missing; cannot seed dev pack images');
+      return;
+    }
+
+    const bundledImages = BUNDLED_IMAGES_DIR.list().filter((entry): entry is File => entry instanceof File);
+
+    for (const imageFile of bundledImages) {
+      try {
+        const targetFile = new File(imagesDir, imageFile.name ?? '');
+        if (!targetFile.parent?.exists) {
+          targetFile.parent?.create({ intermediates: true, idempotent: true });
+        }
+        imageFile.copy(targetFile);
+      } catch (err) {
+        console.warn(`[packManager] Failed to copy image ${imageFile.uri} into dev pack`, err);
+      }
     }
   }
 

@@ -13,7 +13,7 @@ export function Screen({ children, scrollable = false, padded = true, style, ...
       {children}
     </ScrollView>
   ) : (
-    <SafeAreaView /*style={[styles.root, padded && styles.padded, style]}*/ {...rest}>
+    <SafeAreaView style={[styles.root, padded && styles.padded, style]} {...rest}>
       {children}
     </SafeAreaView>
   );

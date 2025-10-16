@@ -5,6 +5,7 @@ import settingsReducer from '@/store/slices/settingsSlice';
 import contentReducer from '@/store/slices/contentSlice';
 import progressReducer from '@/store/slices/progressSlice';
 import audioReducer from '@/store/slices/audioSlice';
+import vocabularySessionReducer from '@/services/content/vocabularySessionSlice';
 
 export const rootReducer = combineReducers({
   app: appReducer,
@@ -12,6 +13,7 @@ export const rootReducer = combineReducers({
   content: contentReducer,
   progress: progressReducer,
   audio: audioReducer,
+  vocabularySession: vocabularySessionReducer,
 });
 
 export const store = configureStore({

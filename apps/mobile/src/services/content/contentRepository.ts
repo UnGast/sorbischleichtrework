@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { useAppSelector } from '@/store';
-import { Topic } from '@/types/content';
+import { Topic, VocabItem } from '@/types/content';
+import { packManager } from './packManager';
 
 export function useContentSlice() {
   return useAppSelector((state) => state.content);
@@ -29,6 +31,28 @@ export function usePhrasesMap() {
 
 export function useVocabularyForTopic(topicId: string) {
   return useAppSelector((state) => state.content.vocabularyByTopic[topicId] ?? []);
+}
+
+export interface ResolvedVocabItem extends VocabItem {
+  imageUri?: string;
+  audioUri?: string;
+}
+
+export function useResolvedVocabularyForTopic(topicId: string): ResolvedVocabItem[] {
+  const items = useVocabularyForTopic(topicId);
+
+  return useMemo(() => {
+    return items.map((item) => {
+      const audioUri = item.audioSorbian ? packManager.resolveAssetUri(item.audioSorbian) ?? item.audioSorbian : undefined;
+      const imageUri = item.img ? packManager.resolveAssetUri(item.img) ?? item.img : undefined;
+
+      return {
+        ...item,
+        audioUri,
+        imageUri,
+      };
+    });
+  }, [items]);
 }
 
 export function usePhrasesForTopic(topicId: string) {

@@ -32,7 +32,7 @@ export const mockVocabulary: Record<string, VocabItem[]> = {
       topicId: 'vocab-01',
       textGerman: 'Guten Morgen!',
       textSorbian: 'Dobre ranje!',
-      img: 'Fotolia_46575927_S.jpg',
+      img: 'images/Fotolia_46575927_S.jpg',
       audioSorbian: 'audio/mock.mp3',
     },
     {
@@ -40,7 +40,7 @@ export const mockVocabulary: Record<string, VocabItem[]> = {
       topicId: 'vocab-01',
       textGerman: 'Guten Tag!',
       textSorbian: 'Dobry dźeń!',
-      img: 'Fotolia_35730691_S.jpg',
+      img: 'images/Fotolia_35730691_S.jpg',
       audioSorbian: 'audio/mock.mp3',
     },
   ],
