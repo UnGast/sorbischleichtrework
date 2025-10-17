@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useGlobalSearchParams, useLocalSearchParams, useRouter } from 'expo-router';
-import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -129,11 +129,6 @@ export default function VocabularyReadRoute() {
         <Animated.View style={[styles.carousel, animatedStyle]}> 
           {orderedItems.map((item) => (
             <View key={item.id} style={styles.card}>
-              <Image
-                source={item.imageUri ? { uri: item.imageUri } : undefined}
-                defaultSource={require('@assets/images/Fotolia_46575927_S.jpg')}
-                style={styles.image}
-              />
               <Text style={styles.german}>{item.textGerman}</Text>
               <Text style={styles.sorbian}>{item.textSorbian}</Text>
             </View>
@@ -186,12 +181,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 12 },
-  },
-  image: {
-    width: '100%',
-    height: 200,
-    borderRadius: 16,
-    marginBottom: 24,
   },
   german: {
     fontSize: 24,

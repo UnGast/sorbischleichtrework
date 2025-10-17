@@ -81,19 +81,11 @@ export async function loadPackContentFromDb(dbUri: string): Promise<SqlitePackCo
       'SELECT id, name, audio, image FROM hundred_seconds ORDER BY id',
     );
 
-    console.log('[sqlitePackLoader] Row counts', {
-      vocabulary: vocabRows.length,
-      phrases: phraseRows.length,
-      hundredSeconds: hundredRows.length,
-    });
-
     const topics: Topic[] = topicRows.map((row) => ({
       id: row.id,
       type: row.type as Topic['type'],
       nameGerman: row.name_german,
       nameSorbian: row.name_sorbian,
-      icon: row.icon ?? undefined,
-      audioIntroSorbian: row.audio_intro_sorbian ?? undefined,
       order: row.ord,
     }));
 

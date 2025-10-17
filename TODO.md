@@ -1,0 +1,4 @@
+- pack manager needs to handle hashes when downloading packs/when to download again and unpack again => specification for packet source?
+- pack language versions
+- perhaps make sorbian on top, german below in phrases
+- for sorbian/enlgish i18n

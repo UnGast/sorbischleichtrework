@@ -67,7 +67,7 @@ export default function PhraseTopicRoute() {
 
       console.log(`Playing phrase ${phrase.id} with audio ${audioFile}`);
     },
-    [dispatch, playTrack],
+    [activePackId, dispatch, playTrack],
   );
 
   const startAutoMode = useCallback(async () => {
@@ -145,7 +145,7 @@ export default function PhraseTopicRoute() {
       );
     }
     console.log('Starting auto mode for phrase topic');
-  }, [data, dispatch, setQueueWithAutoMode, topicId]);
+  }, [activePackId, data, dispatch, primaryLanguage, setQueueWithAutoMode, topicId]);
 
   const stopAutoMode = useCallback(() => {
     if (!topicId) {
@@ -167,7 +167,7 @@ export default function PhraseTopicRoute() {
     if (isPlaying) {
       togglePlay();
     }
-  }, [dispatch, isPlaying, togglePlay, topicId]);
+  }, [activePackId, dispatch, isPlaying, togglePlay, topicId]);
 
   if (data.length === 0) {
     return (
@@ -181,15 +181,16 @@ export default function PhraseTopicRoute() {
     <Screen>
       <View style={styles.header}>
         <Text style={styles.title}>{topic?.nameGerman || 'Phrasen'}</Text>
-        <TouchableOpacity
-          style={[styles.modeButton, autoMode && styles.modeButtonActive]}
-          onPress={autoMode ? stopAutoMode : startAutoMode}
-        >
-          <Text style={[styles.modeButtonText, autoMode && styles.modeButtonTextActive]}>
-            {autoMode ? 'Auto Mode stoppen' : 'Auto Mode starten'}
-          </Text>
-        </TouchableOpacity>
       </View>
+
+      <TouchableOpacity
+        style={[styles.modeButton, autoMode && styles.modeButtonActive]}
+        onPress={autoMode ? stopAutoMode : startAutoMode}
+      >
+        <Text style={[styles.modeButtonText, autoMode && styles.modeButtonTextActive]}>
+          {autoMode ? 'Auto Mode stoppen' : 'Auto Mode starten'}
+        </Text>
+      </TouchableOpacity>
 
       <FlatList
         data={data}
@@ -216,13 +217,8 @@ export default function PhraseTopicRoute() {
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    marginBottom: 16,
+    paddingBottom: 12,
+    marginBottom: 12,
   },
   title: {
     fontSize: 24,
@@ -234,6 +230,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
+    marginBottom: 16,
+    alignSelf: 'flex-start',
   },
   modeButtonActive: {
     backgroundColor: '#3B82F6',

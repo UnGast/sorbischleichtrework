@@ -4,12 +4,6 @@ import { Screen } from '@/components/common/Screen';
 import { TopicTile } from '@/components/common/TopicTile';
 import { useModuleAvailability, useTopicsByType } from '@/services/content/contentRepository';
 
-import Lektion1Icon from '@assets/images/lektion1.png';
-
-const ICON_MAP = {
-  'lektion1.png': Lektion1Icon,
-} as const;
-
 export default function PhrasesTopicsRoute() {
   const modules = useModuleAvailability();
   const topics = useTopicsByType('phrases');
@@ -37,7 +31,6 @@ export default function PhrasesTopicsRoute() {
             <TopicTile
               name={item.nameGerman}
               subtitle={item.nameSorbian}
-              icon={item.icon ? ICON_MAP[item.icon as keyof typeof ICON_MAP] : undefined}
             />
           </Link>
         )}

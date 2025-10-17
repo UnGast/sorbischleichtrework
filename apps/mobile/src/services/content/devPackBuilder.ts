@@ -1,8 +1,11 @@
 import { Directory, File, Paths } from 'expo-file-system';
 import { Asset } from 'expo-asset';
 import { unzipSync } from 'fflate';
+import * as Crypto from 'expo-crypto';
 
 import { LEGACY_PACK_ARCHIVE, LEGACY_PACK_ID } from '@/models/PackIDs';
+
+const HASH_FILENAME = '.pack-hash';
 
 function log(message: string) {
   console.log(`[devPackBuilder] ${message}`);
@@ -54,12 +57,6 @@ export async function ensureLegacyPackAvailable() {
   }
 
   const packDir = new Directory(packsDir, LEGACY_PACK_ID);
-  if (packDir.exists) {
-    log(`Device pack already present at ${packDir.uri}`);
-    return;
-  }
-  packDir.create();
-
   log('Attempting to resolve bundled pack archive');
   const archiveAsset = Asset.fromModule(LEGACY_PACK_ARCHIVE);
   await archiveAsset.downloadAsync();
@@ -71,6 +68,34 @@ export async function ensureLegacyPackAvailable() {
 
   const archiveFile = new File(archiveAsset.localUri);
   const archiveBytes = await archiveFile.bytes();
+  const archiveBase64 = archiveFile.base64Sync();
+  const archiveHash = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, archiveBase64, {
+    encoding: Crypto.CryptoEncoding.HEX,
+  });
+
+  const hashFile = new File(packDir, HASH_FILENAME);
+
+  if (packDir.exists) {
+    if (hashFile.exists) {
+      const storedHash = hashFile.textSync().trim();
+      if (storedHash === archiveHash) {
+        log(`Legacy pack already extracted with matching hash ${archiveHash}`);
+        return;
+      }
+      log(`Legacy pack hash changed (stored ${storedHash}, new ${archiveHash}); refreshing`);
+    } else {
+      log('Legacy pack directory exists but no hash file found; refreshing');
+    }
+
+    try {
+      packDir.delete();
+    } catch (error) {
+      console.warn('[devPackBuilder] Failed to remove existing legacy pack directory', error);
+      return;
+    }
+  }
+
+  packDir.create();
 
   const entries = unzipSync(archiveBytes);
   const entryNames = Object.keys(entries);
@@ -99,6 +124,8 @@ export async function ensureLegacyPackAvailable() {
     const outFile = new File(parentDir, fileName);
     outFile.write(entries[rawName]);
   });
+
+  hashFile.write(archiveHash);
 
   log(`Legacy pack extracted to ${packDir.uri}`);
 }

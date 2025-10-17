@@ -435,10 +435,30 @@ async function convertHundredSeconds(
     }
 
     if (image) {
-      const logicalName = `hundred/${image}`;
-      const asset = await collectAsset(manifest, logicalName, imageRoot);
+      const normalizedImage = image.includes('/') ? image : `hundred/${image}`;
+      const asset = await collectAsset(manifest, normalizedImage, imageRoot);
       if (asset) {
         record.image = asset.relativePath;
+      }
+    } else {
+      const fallbackNames = [
+        `hundredsec_slide_${index + 1}.jpg`,
+        `hundredsec_slide_${index + 1}.png`,
+      ];
+
+      for (const fileName of fallbackNames) {
+        try {
+          await fs.stat(path.join(imageRoot, fileName));
+        } catch (error) {
+          continue;
+        }
+
+        const logicalName = `hundred/${fileName}`;
+        const asset = await collectAsset(manifest, logicalName, imageRoot);
+        if (asset) {
+          record.image = asset.relativePath;
+          break;
+        }
       }
     }
 
