@@ -27,4 +27,5 @@
 
 - Implement `progress.db` initialization + migrations alongside a persistence layer in the app.
 - Update content-pack activation to copy/verify `content.db` snapshots and clean up superseded versions.
+- `npm run build:mock-pack` generates `assets/packs/mock-pack` (SQLite DB + assets) and mirrors it into `content/dev/mock-pack`. `contentService` copies the bundled pack onto the device on first run.
 

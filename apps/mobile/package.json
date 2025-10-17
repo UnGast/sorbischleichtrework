@@ -15,7 +15,8 @@
     "e2e": "detox test",
     "dev": "expo start",
     "clean": "rimraf dist .expo .expo-shared",
-    "convert:phrases": "ts-node --compiler-options '{\"module\":\"commonjs\"}' scripts/convert-legacy-content.ts ../../old/main/assets ../../content/dev"
+    "copy:pack": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/copy-pack-assets.ts",
+    "build:legacy-pack": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/convert-legacy-content.ts ../../old/main/assets ./assets/packs legacy-pack \"Legacy Pack\" 1.0.0"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -37,6 +38,7 @@
     "expo-splash-screen": "~31.0.10",
     "expo-sqlite": "~16.0.8",
     "expo-status-bar": "~3.0.8",
+    "fflate": "^0.8.2",
     "i18next": "^23.11.0",
     "lodash": "^4.17.21",
     "react": "19.1.0",
@@ -52,32 +54,27 @@
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.5.1",
     "react-redux": "^9.2.0",
-    "redux-persist": "^6.0.0"
+    "redux-persist": "^6.0.0",
+    "yazl": "^2.5.1"
   },
   "expo": {
-    "install": {
-      "exclude": [
-        "expo-router"
-      ]
-    },
-    "doctor": {
-      "reactNativeDirectoryCheck": {
-        "exclude": [
-          "react-native-track-player"
-        ]
-      }
-    }
+    "assetBundlePatterns": [
+      "assets/packs/mock-pack.zip"
+    ]
   },
   "devDependencies": {
     "@babel/core": "^7.26.3",
     "@babel/preset-env": "^7.26.0",
     "@babel/preset-typescript": "^7.26.0",
     "@testing-library/react-native": "^12.5.2",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/jest": "^29.5.12",
     "@types/react": "~19.1.0",
     "@types/react-test-renderer": "^19.0.0",
     "@types/xml2js": "^0.4.14",
+    "@types/yazl": "^3.3.0",
     "babel-plugin-module-resolver": "^5.0.2",
+    "better-sqlite3": "^9.5.0",
     "detox": "^20.15.4",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useEffect } from 'react';
+import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import shuffle from 'lodash/shuffle';
@@ -39,20 +39,85 @@ export default function VocabularyWriteRoute() {
   const [availableTiles, setAvailableTiles] = useState<LetterTile[]>([]);
   const [selectedTiles, setSelectedTiles] = useState<LetterTile[]>([]);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const autoAdvanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const currentItem = exercises[currentIndex];
+  const goNext = useCallback(() => {
+    if (autoAdvanceTimeout.current) {
+      clearTimeout(autoAdvanceTimeout.current);
+      autoAdvanceTimeout.current = null;
+    }
+
+    if (currentIndex === exercises.length - 1) {
+      if (topicId) {
+        dispatch(setStep({ topicId, step: 'complete' }));
+        dispatch(resetSession(topicId));
+        if (activePackId) {
+          void dispatch(
+            setTopicCompletionStatus({
+              packId: activePackId,
+              topicId,
+              completed: true,
+            }),
+          );
+
+          void dispatch(
+            logProgressActivity({
+              packId: activePackId,
+              id: `vocab-topic-complete-${topicId}-${Date.now()}`,
+              ts: Date.now(),
+              kind: 'finish_topic',
+              entityId: topicId,
+              entityType: 'topic',
+            }),
+          );
+        }
+      }
+      router.replace({ pathname: `/learn/${topicId}/complete` });
+      return;
+    }
+
+    setIsCorrect(null);
+    setCurrentIndex((prev) => Math.min(prev + 1, exercises.length - 1));
+  }, [activePackId, currentIndex, dispatch, exercises.length, router, topicId]);
+
+  const scheduleAutoAdvance = useCallback(() => {
+    if (autoAdvanceTimeout.current) {
+      clearTimeout(autoAdvanceTimeout.current);
+    }
+    autoAdvanceTimeout.current = setTimeout(() => {
+      autoAdvanceTimeout.current = null;
+      goNext();
+    }, 1200);
+  }, [goNext]);
+
+  const currentItem = exercises[currentIndex] ?? null;
   const answer = useMemo(() => selectedTiles.map((tile) => tile.char).join(''), [selectedTiles]);
 
   useEffect(() => {
-    if (currentItem) {
-      setAvailableTiles(buildScrambledTiles(currentItem.textSorbian));
+    if (autoAdvanceTimeout.current) {
+      clearTimeout(autoAdvanceTimeout.current);
+      autoAdvanceTimeout.current = null;
+    }
+
+    const item = exercises[currentIndex];
+    if (item) {
+      setAvailableTiles(buildScrambledTiles(item.textSorbian));
       setSelectedTiles([]);
       setIsCorrect(null);
     } else {
       setAvailableTiles([]);
       setSelectedTiles([]);
     }
-  }, [currentItem]);
+  }, [currentIndex, exercises]);
+
+  useEffect(() => {
+    return () => {
+      if (autoAdvanceTimeout.current) {
+        clearTimeout(autoAdvanceTimeout.current);
+        autoAdvanceTimeout.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!topicId || !activePackId) {
@@ -108,20 +173,22 @@ export default function VocabularyWriteRoute() {
     setIsCorrect(null);
   }, []);
 
-  const checkAnswer = useCallback(async () => {
-    if (!currentItem) return;
-    if (answer.length === 0) {
+  const checkAnswer = useCallback(async (): Promise<boolean> => {
+    const item = exercises[currentIndex];
+    if (!item) return false;
+    const currentAnswer = selectedTiles.map((tile) => tile.char).join('');
+    if (currentAnswer.length === 0) {
       setIsCorrect(false);
-      return;
+      return false;
     }
     const normalize = (value: string) => value.normalize('NFKC').replace(/\s+/g, '').toLowerCase();
-    const normalized = normalize(answer);
-    const expected = normalize(currentItem.textSorbian);
+    const normalized = normalize(currentAnswer);
+    const expected = normalize(item.textSorbian);
     const correct = normalized === expected;
     setIsCorrect(correct);
 
     if (activePackId) {
-      const attemptId = `${currentItem.id}#write`;
+      const attemptId = `${item.id}#write`;
       void dispatch(
         recordProgressAttempt({
           packId: activePackId,
@@ -137,55 +204,35 @@ export default function VocabularyWriteRoute() {
           id: `write-attempt-${attemptId}-${Date.now()}`,
           ts: Date.now(),
           kind: 'complete_item',
-          entityId: currentItem.id,
+          entityId: item.id,
           entityType: 'vocab',
           metadata: { exercise: 'write', correct },
         }),
       );
     }
 
-    if (correct && currentItem.audioUri) {
+    if (correct && item.audioUri) {
       await playback.playTrack({
-        id: `${currentItem.id}-write`,
-        title: currentItem.textGerman,
-        url: currentItem.audioUri,
-        entityId: currentItem.id,
+        id: `${item.id}-write`,
+        title: item.textGerman,
+        url: item.audioUri,
+        entityId: item.id,
       });
     }
-  }, [answer, currentItem, playback]);
 
-  const goNext = useCallback(async () => {
-    if (currentIndex === exercises.length - 1) {
-      if (topicId) {
-        dispatch(setStep({ topicId, step: 'complete' }));
-        dispatch(resetSession(topicId));
-        if (activePackId) {
-          void dispatch(
-            setTopicCompletionStatus({
-              packId: activePackId,
-              topicId,
-              completed: true,
-            }),
-          );
+    if (correct) {
+      scheduleAutoAdvance();
+    }
+    return correct;
+  }, [activePackId, currentIndex, dispatch, exercises, playback, scheduleAutoAdvance, selectedTiles]);
 
-          void dispatch(
-            logProgressActivity({
-              packId: activePackId,
-              id: `vocab-topic-complete-${topicId}-${Date.now()}`,
-              ts: Date.now(),
-              kind: 'finish_topic',
-              entityId: topicId,
-              entityType: 'topic',
-            }),
-          );
-        }
-      }
-      router.replace({ pathname: `/learn/${topicId}/complete` });
+  const handleSubmit = useCallback(async () => {
+    if (isCorrect === true) {
+      goNext();
       return;
     }
-    setIsCorrect(null);
-    setCurrentIndex((prev) => Math.min(prev + 1, exercises.length - 1));
-  }, [activePackId, currentIndex, dispatch, exercises.length, router, topicId]);
+    await checkAnswer();
+  }, [checkAnswer, goNext, isCorrect]);
 
   if (!currentItem) {
     return (
@@ -294,12 +341,18 @@ export default function VocabularyWriteRoute() {
           ) : null}
 
           <View style={styles.actions}>
-            <TouchableOpacity onPress={checkAnswer} style={styles.primaryButton}>
-              <Text style={styles.primaryText}>Prüfen</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={goNext} style={styles.secondaryButton}>
-              <Text style={styles.secondaryText}>
-                {currentIndex === exercises.length - 1 ? 'Fertigstellen' : 'Weiter'}
+            <TouchableOpacity
+              onPress={handleSubmit}
+              style={[styles.primaryButton, isCorrect === true && styles.primaryButtonReady]}
+            >
+              <Text style={styles.primaryText}>
+                {isCorrect === true
+                  ? currentIndex === exercises.length - 1
+                    ? 'Fertigstellen'
+                    : 'Weiter'
+                  : currentIndex === exercises.length - 1
+                  ? 'Fertigstellen'
+                  : 'Weiter'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -377,10 +430,18 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   primaryButton: {
+    marginTop: 24,
     backgroundColor: '#2563EB',
-    paddingHorizontal: 32,
-    paddingVertical: 14,
-    borderRadius: 28,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryButtonReady: {
+    backgroundColor: '#10B981',
+  },
+  primaryButtonDisabled: {
+    backgroundColor: '#93C5FD',
   },
   primaryText: {
     color: '#FFFFFF',

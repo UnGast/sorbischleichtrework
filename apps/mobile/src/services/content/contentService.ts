@@ -8,10 +8,10 @@ import {
   setContentLoading,
 } from '@/store/slices/contentSlice';
 import { setBootstrapStatus, setAppError, setActivePack } from '@/store/slices/appSlice';
-import { mockHundredSeconds, mockPhrases, mockTopics, mockVocabulary } from './mockData';
 import { packManager } from './packManager';
 import { progressDatabase } from '@/services/db/progressDatabase';
 import { loadProgressForPack } from '@/store/slices/progressSlice';
+import { ensureLegacyPackAvailable } from '@/services/content/devPackBuilder';
 
 export async function initializeContent() {
   const { dispatch } = store;
@@ -22,7 +22,13 @@ export async function initializeContent() {
   try {
     await Promise.all([packManager.init(), progressDatabase.init()]);
 
-    const availablePacks = await packManager.listAvailablePacks();
+    let availablePacks = await packManager.listAvailablePacks();
+
+    if (availablePacks.length === 0) {
+      await ensureLegacyPackAvailable();
+      await packManager.init();
+      availablePacks = await packManager.listAvailablePacks();
+    }
 
     if (availablePacks.length === 0) {
       throw new Error('No content packs available');
@@ -59,32 +65,39 @@ export async function initializeContent() {
   } catch (error) {
     console.error('Failed to initialize content', error);
     dispatch(setAppError(error instanceof Error ? error.message : 'Unknown error'));
-    await loadMockContent();
+    await loadLegacyContent();
   } finally {
     dispatch(setContentLoading(false));
   }
 }
 
-export async function loadMockContent() {
+export async function loadLegacyContent() {
   const { dispatch } = store;
 
   await progressDatabase.init();
-  dispatch(setTopics(mockTopics));
-  dispatch(setActivePack('mock-pack'));
-  await store.dispatch(loadProgressForPack('mock-pack'));
-  Object.entries(mockVocabulary).forEach(([topicId, items]) => {
+  await ensureLegacyPackAvailable();
+  await packManager.init();
+
+  const fallbackPackId = 'legacy-pack';
+  dispatch(setActivePack(fallbackPackId));
+  await store.dispatch(loadProgressForPack(fallbackPackId));
+
+  const packData = await packManager.loadPackContent(fallbackPackId);
+  if (!packData) {
+    throw new Error('Fallback legacy pack not found');
+  }
+
+  const { content, modules } = packData;
+  const { topics, vocabularyByTopic, phrasesByTopic, hundredSeconds } = content;
+
+  dispatch(setTopics(topics));
+  Object.entries(vocabularyByTopic).forEach(([topicId, items]) => {
     dispatch(setVocabulary({ topicId, items }));
   });
-  Object.entries(mockPhrases).forEach(([topicId, items]) => {
+  Object.entries(phrasesByTopic).forEach(([topicId, items]) => {
     dispatch(setPhrases({ topicId, items }));
   });
-  dispatch(setHundredSeconds(mockHundredSeconds));
-  dispatch(
-    setModuleAvailability({
-      vocabulary: true,
-      phrases: true,
-      hundredSeconds: true,
-    }),
-  );
+  dispatch(setHundredSeconds(hundredSeconds));
+  dispatch(setModuleAvailability(modules));
   dispatch(setBootstrapStatus('ready'));
 }
