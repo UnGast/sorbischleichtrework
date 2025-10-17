@@ -8,12 +8,6 @@ import { setStep } from '@/services/content/vocabularySessionSlice';
 import { VocabularyProgressSummaryCard } from '@/components/common/VocabularyProgressSummaryCard';
 import { useVocabularyProgressSummary } from '@/hooks/useTopicsProgressSummary';
 
-import Lektion1Icon from '@assets/images/lektion1.png';
-
-const ICON_MAP = {
-  'lektion1.png': Lektion1Icon,
-} as const;
-
 export default function VocabularyTopicsRoute() {
   const topics = useTopicsByType('vocabulary');
   const vocabularyMap = useVocabularyMap();
@@ -49,7 +43,6 @@ export default function VocabularyTopicsRoute() {
             <TopicTile
               name={item.nameGerman}
               subtitle={item.nameSorbian}
-              icon={item.icon ? ICON_MAP[item.icon as keyof typeof ICON_MAP] : undefined}
               statusLabel={statusLabel}
               completed={topicProgress?.isCompleted}
               onPress={() => {

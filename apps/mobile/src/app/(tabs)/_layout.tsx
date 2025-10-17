@@ -16,8 +16,7 @@ export default function TabsLayout() {
           const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
             learn: 'book-outline',
             phrases: 'musical-notes-outline',
-            hundred: 'radio-outline',
-            search: 'search-outline',
+            'hundred/index': 'hourglass-outline',
             about: 'information-circle-outline',
           };
 
@@ -27,15 +26,14 @@ export default function TabsLayout() {
       })}
     >
       {modules.vocabulary ? (
-        <Tabs.Screen name="learn" options={{ title: 'Lernen' }} />
+        <Tabs.Screen name="learn" options={{ title: 'Übungen' }} />
       ) : null}
       {modules.phrases ? (
-        <Tabs.Screen name="phrases" options={{ title: 'Phrasen' }} />
+        <Tabs.Screen name="phrases" options={{ title: 'Redwendungen' }} />
       ) : null}
       {modules.hundredSeconds ? (
-        <Tabs.Screen name="hundred" options={{ title: '100 Sekunden' }} />
+        <Tabs.Screen name="hundred/index" options={{ title: '100 Sekunden' }} />
       ) : null}
-      <Tabs.Screen name="search" options={{ title: 'Suche' }} />
       <Tabs.Screen name="about" options={{ title: 'Über' }} />
     </Tabs>
   );
