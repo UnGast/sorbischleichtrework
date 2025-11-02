@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./", // Resolve imports relative to the project root
+    "paths": {
+      "@/*": ["src/*"],
+      "@assets/*": ["assets/*"],
+      "@i18n/*": ["src/i18n/*"],
+      "@utils/*": ["src/utils/*"]
+    }
+  }
+}
+

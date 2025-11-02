@@ -11,7 +11,7 @@ import { setBootstrapStatus, setAppError, setActivePack } from '@/store/slices/a
 import { packManager } from './packManager';
 import { progressDatabase } from '@/services/db/progressDatabase';
 import { loadProgressForPack } from '@/store/slices/progressSlice';
-import { ensureLegacyPackAvailable } from '@/services/content/devPackBuilder';
+import { provisionPacks } from '@/services/content/packProvisioner';
 
 export async function initializeContent() {
   const { dispatch } = store;
@@ -25,7 +25,7 @@ export async function initializeContent() {
     let availablePacks = await packManager.listAvailablePacks();
 
     if (availablePacks.length === 0) {
-      await ensureLegacyPackAvailable();
+      await provisionPacks();
       await packManager.init();
       availablePacks = await packManager.listAvailablePacks();
     }
@@ -75,7 +75,7 @@ export async function loadLegacyContent() {
   const { dispatch } = store;
 
   await progressDatabase.init();
-  await ensureLegacyPackAvailable();
+  await provisionPacks();
   await packManager.init();
 
   const fallbackPackId = 'legacy-pack';

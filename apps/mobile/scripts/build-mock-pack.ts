@@ -8,12 +8,11 @@ import { mockHundredSeconds, mockPhrases, mockTopics, mockVocabulary } from '@/s
 
 const ROOT = path.resolve(__dirname, '..');
 const PACK_ID = 'mock-pack';
-const PACK_ROOT = path.join(ROOT, 'assets', 'packs', PACK_ID);
-const AUDIO_DEST = path.join(PACK_ROOT, 'audio');
-const IMAGES_DEST = path.join(PACK_ROOT, 'images');
+const TEMP_DIR = path.join(ROOT, 'content', 'dev', `${PACK_ID}-tmp-build`);
+const AUDIO_DEST = path.join(TEMP_DIR, 'audio');
+const IMAGES_DEST = path.join(TEMP_DIR, 'images');
 const AUDIO_SOURCE = path.join(ROOT, 'assets', 'audio');
 const IMAGES_SOURCE = path.join(ROOT, 'assets', 'images');
-const DEV_OUTPUT = path.join(ROOT, 'content', 'dev', PACK_ID);
 
 const PACK_MANIFEST = {
   packId: PACK_ID,
@@ -221,20 +220,6 @@ function copyAsset(relativePath: string) {
   fs.copyFileSync(sourcePath, destPath);
 }
 
-function copyDir(src: string, dest: string) {
-  ensureDir(dest);
-  for (const entry of fs.readdirSync(src)) {
-    const srcPath = path.join(src, entry);
-    const destPath = path.join(dest, entry);
-    const stats = fs.statSync(srcPath);
-    if (stats.isDirectory()) {
-      copyDir(srcPath, destPath);
-    } else {
-      fs.copyFileSync(srcPath, destPath);
-    }
-  }
-}
-
 function zipDirectory(srcDir: string, zipPath: string, rootName: string) {
   const zip = new yazl.ZipFile();
 
@@ -264,20 +249,16 @@ function zipDirectory(srcDir: string, zipPath: string, rootName: string) {
 }
 
 async function main() {
-  if (fs.existsSync(PACK_ROOT)) {
-    fs.rmSync(PACK_ROOT, { recursive: true, force: true });
+  if (fs.existsSync(TEMP_DIR)) {
+    fs.rmSync(TEMP_DIR, { recursive: true, force: true });
   }
 
-  if (fs.existsSync(DEV_OUTPUT)) {
-    fs.rmSync(DEV_OUTPUT, { recursive: true, force: true });
-  }
-
-  ensureDir(PACK_ROOT);
+  ensureDir(TEMP_DIR);
   ensureDir(AUDIO_DEST);
   ensureDir(IMAGES_DEST);
 
-  const dbPath = path.join(PACK_ROOT, 'content.db');
-  const manifestPath = path.join(PACK_ROOT, 'pack.json');
+  const dbPath = path.join(TEMP_DIR, 'content.db');
+  const manifestPath = path.join(TEMP_DIR, 'pack.json');
 
   createDatabase(dbPath);
   setJournalModeDelete(dbPath);
@@ -288,14 +269,13 @@ async function main() {
   assets.forEach(copyAsset);
 
   // Copy to dev content directory for simulator use
-  console.log(`[mock-pack] Mirroring pack to ${DEV_OUTPUT}`);
-  copyDir(PACK_ROOT, DEV_OUTPUT);
-
   const zipPath = path.join(ROOT, 'assets', 'packs', `${PACK_ID}.zip`);
   console.log(`[mock-pack] Creating zip at ${zipPath}`);
-  await zipDirectory(PACK_ROOT, zipPath, PACK_ID);
+  await zipDirectory(TEMP_DIR, zipPath, PACK_ID);
 
-  console.log(`[mock-pack] Content pack built at ${PACK_ROOT}, mirrored to ${DEV_OUTPUT}, and zipped to ${zipPath}`);
+  console.log(`[mock-pack] Content pack built at ${TEMP_DIR} and zipped to ${zipPath}`);
+
+  fs.rmSync(TEMP_DIR, { recursive: true, force: true });
 }
 
 void main();

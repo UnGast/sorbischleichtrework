@@ -2,7 +2,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 
 import { ModuleAvailability } from '@/types/content';
 import { loadPackContentFromDb, SqlitePackContent } from '@/services/content/sqlitePackLoader';
-import { ensureLegacyPackAvailable } from '@/services/content/devPackBuilder';
+import { provisionPacks } from '@/services/content/packProvisioner';
 
 export interface PackSummary {
   packId: string;
@@ -85,7 +85,7 @@ class PackManager {
       return;
     }
 
-    await ensureLegacyPackAvailable();
+    await provisionPacks();
 
     const bundled = await this.readPackSummariesFromDir(getBundledPacksDir());
     const dev = await this.readPackSummariesFromDir(getDevPacksDir());

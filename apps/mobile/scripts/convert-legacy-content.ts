@@ -2,9 +2,12 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import readline from 'node:readline/promises';
+import { stdin as input, stdout as output } from 'node:process';
 
 import Database from 'better-sqlite3';
 import { ZipFile } from 'yazl';
+import { createHash } from 'node:crypto';
 
 import { convertLegacyContent } from './legacy/convertLegacyCore';
 import type { LegacyConversionResult, AssetManifestEntry } from './legacy/convertLegacyCore';
@@ -16,6 +19,12 @@ interface ConvertOptions {
   displayName: string;
   contentVersion: string;
 }
+
+const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
+const DEFAULT_OUTPUT_DIR = path.join(REPO_ROOT, 'converted-packs');
+const DEFAULT_PACK_ID = 'main-pack';
+const DEFAULT_DISPLAY_NAME = 'Main Pack';
+const DEFAULT_CONTENT_VERSION = '1.0.0';
 
 function ensureDir(dirPath: string) {
   if (!fs.existsSync(dirPath)) {
@@ -238,33 +247,89 @@ export async function buildContentPack(options: ConvertOptions) {
 
   writeManifest(path.join(packDir, 'pack.json'), options);
 
-  await zipDirectory(packDir, path.join(outputDir, `${packId}.zip`), packId);
+  const zipPath = path.join(outputDir, `${packId}.zip`);
+  await zipDirectory(packDir, zipPath, packId);
+  console.log(`[convert] Wrote zip to ${zipPath}`);
+
+  const hash = await computeFileHash(zipPath);
+  const hashPath = path.join(outputDir, `${packId}.sha256`);
+  fs.writeFileSync(hashPath, `${hash}\n`, 'utf-8');
+  console.log(`[convert] Wrote hash to ${hashPath}`);
 
   return packDir;
+}
+
+async function computeFileHash(filePath: string): Promise<string> {
+  const hash = createHash('sha256');
+  const stream = fs.createReadStream(filePath);
+
+  return new Promise<string>((resolve, reject) => {
+    stream.on('data', (chunk) => hash.update(chunk));
+    stream.on('error', reject);
+    stream.on('end', () => resolve(hash.digest('hex')));
+  });
 }
 
 if (require.main === module) {
   (async () => {
     try {
-      const [legacyRoot, outputDir, packId = 'legacy-pack', displayName = 'Legacy Pack', contentVersion = '1.0.0'] =
-        process.argv.slice(2);
+      const args = process.argv.slice(2);
+      let legacyRootArg = args[0];
+      let outputDirArg = args[1];
+      let packIdArg = args[2];
+      let displayNameArg = args[3];
+      let contentVersionArg = args[4];
 
-      if (!legacyRoot || !outputDir) {
-        throw new Error(
-          'Usage: ts-node -r tsconfig-paths/register scripts/convert-legacy-content.ts <legacy-root> <output-dir> [packId] [displayName] [contentVersion]',
-        );
+      const rl = readline.createInterface({ input, output });
+
+      if (!legacyRootArg) {
+        legacyRootArg = await rl.question('Path to legacy content root: ');
       }
 
+      if (!legacyRootArg) {
+        throw new Error('Legacy content root is required.');
+      }
+
+      if (!outputDirArg) {
+        const defaultOutput = DEFAULT_OUTPUT_DIR;
+        const answer = await rl.question(`Output directory [${defaultOutput}]: `);
+        outputDirArg = answer.trim() || defaultOutput;
+      }
+
+      if (!packIdArg) {
+        const answer = await rl.question(`Pack ID [${DEFAULT_PACK_ID}]: `);
+        packIdArg = answer.trim() || DEFAULT_PACK_ID;
+      }
+
+      if (!displayNameArg) {
+        const answer = await rl.question(`Display name [${DEFAULT_DISPLAY_NAME}]: `);
+        displayNameArg = answer.trim() || DEFAULT_DISPLAY_NAME;
+      }
+
+      if (!contentVersionArg) {
+        const answer = await rl.question(`Content version [${DEFAULT_CONTENT_VERSION}]: `);
+        contentVersionArg = answer.trim() || DEFAULT_CONTENT_VERSION;
+      }
+
+      rl.close();
+
       const options: ConvertOptions = {
-        legacyRoot: path.resolve(legacyRoot),
-        outputDir: path.resolve(outputDir),
-        packId,
-        displayName,
-        contentVersion,
+        legacyRoot: path.resolve(legacyRootArg),
+        outputDir: path.resolve(outputDirArg),
+        packId: packIdArg,
+        displayName: displayNameArg,
+        contentVersion: contentVersionArg,
       };
 
-      await buildContentPack(options);
-      console.log(`[convert] Pack ${packId} built at ${path.join(options.outputDir, packId)}`);
+      console.log(`[convert] Converting legacy content from ${options.legacyRoot}`);
+      console.log(`[convert] Output directory: ${options.outputDir}`);
+      console.log(`[convert] Pack ID: ${options.packId}`);
+      console.log(`[convert] Display name: ${options.displayName}`);
+      console.log(`[convert] Content version: ${options.contentVersion}`);
+
+      const packDir = await buildContentPack(options);
+      console.log(`[convert] Conversion complete. Content pack directory: ${packDir}`);
+      console.log(`[convert] Zip archive available at ${path.join(options.outputDir, `${options.packId}.zip`)}`);
     } catch (error) {
       console.error('[convert] Failed to build legacy pack:', error);
       process.exit(1);

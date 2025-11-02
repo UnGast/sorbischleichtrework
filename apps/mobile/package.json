@@ -15,8 +15,10 @@
     "e2e": "detox test",
     "dev": "expo start",
     "clean": "rimraf dist .expo .expo-shared",
+    "build:mock-pack": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/build-mock-pack.ts",
     "copy:pack": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/copy-pack-assets.ts",
-    "build:legacy-pack": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/convert-legacy-content.ts ../../old/main/assets ./assets/packs legacy-pack \"Legacy Pack\" 1.0.0"
+    "build:legacy-pack:de_hsb": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/convert-legacy-content.ts ../../old/main_deutsch_obersorbisch/assets ../../converted-packs de-hsb-pack \"DE_HSB Pack\" 1.0.0",
+    "build:legacy-pack:de_dsb": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/convert-legacy-content.ts ../../old/main_deutsch_niedersorbisch/assets ../../converted-packs de-dsb-pack \"DE_DSB Pack\" 1.0.0"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -33,6 +35,7 @@
     "expo-font": "~14.0.9",
     "expo-haptics": "~15.0.7",
     "expo-linking": "~8.0.8",
+    "expo-localization": "~17.0.7",
     "expo-network": "~8.0.7",
     "expo-router": "~6.0.12",
     "expo-secure-store": "~15.0.7",
@@ -41,6 +44,7 @@
     "expo-status-bar": "~3.0.8",
     "fflate": "^0.8.2",
     "i18next": "^23.11.0",
+    "i18next-browser-languagedetector": "^7.2.2",
     "lodash": "^4.17.21",
     "react": "19.1.0",
     "react-dom": "19.1.0",

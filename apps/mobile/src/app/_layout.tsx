@@ -1,5 +1,6 @@
 import { AppProviders } from '@/providers/AppProviders';
 import { Stack } from 'expo-router';
+import '@/i18n/setup';
 
 export default function RootLayout() {
   return (

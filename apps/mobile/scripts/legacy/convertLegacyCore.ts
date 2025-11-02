@@ -449,7 +449,7 @@ async function convertHundredSeconds(
       for (const fileName of fallbackNames) {
         try {
           await fs.stat(path.join(imageRoot, fileName));
-        } catch (error) {
+        } catch {
           continue;
         }
 
@@ -516,7 +516,23 @@ export async function convertLegacyContent(baseDir: string): Promise<LegacyConve
     phrasesByTopic[topic.id] = phrases;
   }
 
-  const hundredSecondsRecords = await convertHundredSeconds(hundredFile, manifest, audioRoot, hundredImageRoot);
+  let hundredSecondsRecords: HundredSecRecord[] = [];
+  let hundredFileExists = false;
+  try {
+    const stats = await fs.stat(hundredFile);
+    hundredFileExists = stats.isFile();
+  } catch (err) {
+    const error = err as NodeJS.ErrnoException;
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  }
+
+  if (hundredFileExists) {
+    hundredSecondsRecords = await convertHundredSeconds(hundredFile, manifest, audioRoot, hundredImageRoot);
+  } else {
+    console.warn(`[convert] No hundred seconds file found at ${hundredFile}; skipping module.`);
+  }
 
   return {
     topics,
