@@ -17,6 +17,19 @@ export default function HundredSecondsRoute() {
   const items = useHundredSecondsItems();
   const playback = useAudioPlayback();
 
+  if (items.length === 0) {
+    return (
+      <Screen>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyTitle}>Keine Inhalte verfügbar</Text>
+          <Text style={styles.emptyMessage}>
+            In diesem Content-Paket sind aktuell keine Beiträge für "Sorbisch in 100 Sekunden" enthalten.
+          </Text>
+        </View>
+      </Screen>
+    );
+  }
+
   const renderItem = ({ item }: ListRenderItemInfo<ReturnType<typeof useHundredSecondsItems>[number]>) => {
     const artworkSource = item.imageUri ? { uri: item.imageUri } : DEFAULT_ARTWORK;
     const isActive = playback.currentItemId === item.id;
@@ -83,6 +96,7 @@ export default function HundredSecondsRoute() {
         data={items}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
+        contentInsetAdjustmentBehavior="never"
         ItemSeparatorComponent={() => <View style={styles.listGap} />}
         renderItem={renderItem}
         ListHeaderComponent={
@@ -101,14 +115,15 @@ export default function HundredSecondsRoute() {
 
 const styles = StyleSheet.create({
   listContent: {
+    paddingTop: 16,
     paddingBottom: 36,
+    paddingHorizontal: 16,
   },
   listGap: {
     height: 8,
   },
   headerContainer: {
-    paddingVertical: 8,
-    marginBottom: 8,
+    paddingBottom: 12,
   },
   heading: {
     fontSize: 28,
@@ -197,5 +212,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#475569',
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#111827',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  emptyMessage: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#6B7280',
+    textAlign: 'center',
   },
 });

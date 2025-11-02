@@ -195,6 +195,8 @@ export default function PhraseTopicRoute() {
       <FlatList
         data={data}
         keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        contentInsetAdjustmentBehavior="never"
         renderItem={({ item }) => {
           const isSeparator = item.type === 'separator';
           const sorbianLine = item.sorbianText?.trim().length ? item.sorbianText : item.germanText;
@@ -202,20 +204,20 @@ export default function PhraseTopicRoute() {
             !!item.germanText?.trim().length && item.germanText.trim() !== sorbianLine?.trim();
 
           return (
-          <TouchableOpacity
-            style={[styles.item, currentItemId === item.id && styles.itemPlaying]}
-            onPress={() => playPhrase(item)}
-            disabled={autoMode}
-          >
+            <TouchableOpacity
+              style={[styles.item, currentItemId === item.id && styles.itemPlaying]}
+              onPress={() => playPhrase(item)}
+              disabled={autoMode}
+            >
               {!isSeparator && sorbianLine ? <Text style={styles.primary}>{sorbianLine}</Text> : null}
               {!isSeparator && hasTranslationLine ? <Text style={styles.secondary}>{item.germanText}</Text> : null}
-              {isSeparator ? (
-              <Text style={styles.separator}>{item.germanText}</Text>
-            ) : null}
-            {item.infoText ? <Text style={styles.info}>{item.infoText}</Text> : null}
-          </TouchableOpacity>
+              {isSeparator ? <Text style={styles.separator}>{item.germanText}</Text> : null}
+              {item.infoText ? <Text style={styles.info}>{item.infoText}</Text> : null}
+            </TouchableOpacity>
           );
         }}
+        ListEmptyComponent={<Text style={styles.emptyList}>Keine Phrasen verfügbar.</Text>}
+        showsVerticalScrollIndicator={false}
       />
 
     </Screen>
@@ -224,6 +226,7 @@ export default function PhraseTopicRoute() {
 
 const styles = StyleSheet.create({
   header: {
+    marginTop: 16,
     paddingBottom: 12,
     marginBottom: 12,
   },
@@ -289,6 +292,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
     padding: 8,
     borderRadius: 4,
+  },
+  listContent: {
+    paddingTop: 12,
+    paddingBottom: 24,
+  },
+  emptyList: {
+    paddingVertical: 24,
+    textAlign: 'center',
+    color: '#6B7280',
   },
   empty: {
     fontSize: 16,

@@ -16,7 +16,10 @@ import { logProgressActivity } from '@/store/slices/progressSlice';
 import { useActivePackId } from '@/hooks/useActivePackId';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_WIDTH - 48;
+const SCREEN_HORIZONTAL_PADDING = 16;
+const CARD_MARGIN = 24;
+const CARD_WIDTH = SCREEN_WIDTH - CARD_MARGIN * 2;
+const PAGE_WIDTH = CARD_WIDTH + CARD_MARGIN * 2;
 
 type GlobalParams = {
   itemId?: string;
@@ -62,7 +65,7 @@ export default function VocabularyReadRoute() {
   }, [activePackId, dispatch, topicId]);
 
   useEffect(() => {
-    translateX.value = withTiming(-index * CARD_WIDTH, { duration: 200, easing: Easing.out(Easing.quad) });
+    translateX.value = withTiming(-index * PAGE_WIDTH, { duration: 200, easing: Easing.out(Easing.quad) });
     if (topicId) {
       dispatch(setPosition({ topicId, index }));
     }
@@ -163,6 +166,8 @@ export default function VocabularyReadRoute() {
 
 const styles = StyleSheet.create({
   carouselContainer: {
+    marginTop: 16,
+    marginHorizontal: -SCREEN_HORIZONTAL_PADDING,
     height: 420,
     overflow: 'hidden',
   },
@@ -171,7 +176,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: CARD_WIDTH,
-    marginHorizontal: 24,
+    marginHorizontal: CARD_MARGIN,
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
     padding: 24,

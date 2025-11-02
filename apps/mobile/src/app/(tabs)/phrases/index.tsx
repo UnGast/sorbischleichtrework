@@ -26,6 +26,8 @@ export default function PhrasesTopicsRoute() {
       <FlatList
         data={topics}
         keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        contentInsetAdjustmentBehavior="never"
         renderItem={({ item }) => (
           <Link href={`/phrases/${item.id}`} asChild>
             <TopicTile
@@ -58,5 +60,10 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'center',
     lineHeight: 24,
+  },
+  listContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
   },
 });

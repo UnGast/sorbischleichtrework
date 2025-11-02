@@ -1,9 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
-import { useModuleAvailability } from '@/services/content/contentRepository';
+import { useModuleAvailability, useHundredSecondsItems } from '@/services/content/contentRepository';
 
 export default function TabsLayout() {
   const modules = useModuleAvailability();
+  const hundredItems = useHundredSecondsItems();
+  const showHundred = modules.hundredSeconds && hundredItems.length > 0;
 
   return (
     <Tabs
@@ -31,9 +33,13 @@ export default function TabsLayout() {
       {modules.phrases ? (
         <Tabs.Screen name="phrases" options={{ title: 'Redwendungen' }} />
       ) : null}
-      {modules.hundredSeconds ? (
-        <Tabs.Screen name="hundred/index" options={{ title: '100 Sekunden' }} />
-      ) : null}
+      <Tabs.Screen
+        name="hundred/index"
+        options={{
+          title: '100 Sekunden',
+          href: showHundred ? undefined : null,
+        }}
+      />
       <Tabs.Screen name="about" options={{ title: 'Über' }} />
     </Tabs>
   );

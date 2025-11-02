@@ -20,6 +20,9 @@ export default function VocabularyTopicsRoute() {
       <FlatList
         data={topics}
         keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        contentInsetAdjustmentBehavior="never"
+        showsVerticalScrollIndicator={false}
         ListHeaderComponent={() => (
           <View style={styles.headerContainer}>
             <VocabularyProgressSummaryCard
@@ -61,6 +64,11 @@ export default function VocabularyTopicsRoute() {
 }
 
 const styles = StyleSheet.create({
+  listContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+  },
   headerContainer: {
     paddingBottom: 12,
   },
