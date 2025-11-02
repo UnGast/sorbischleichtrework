@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 /** Central place for pack identifiers */
-export const MAIN_PACK_ID = 'legacy-pack';
+export const MAIN_PACK_ID = 'de-dsb-pack';
 export const PACK_ASSETS = {
   main: {
-    archive: require('../../assets/packs/legacy-pack.zip'),
-    hash: require('../../assets/packs/legacy-pack.sha256'),
+    archive: require('../../assets/packs/de-dsb-pack.zip'),
+    hash: require('../../assets/packs/de-dsb-pack.sha256'),
   },
   devMock: {
     archive: require('../../assets/packs/mock-pack.zip'),

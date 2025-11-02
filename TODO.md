@@ -1,6 +1,8 @@
-- legacy pack builder should output to a dir outside of apps; and give the pack a name
-- mock pack builder should not output a dir besides the zip
+- ~~legacy pack builder should output to a dir outside of apps; and give the pack a name~~
+- ~~mock pack builder should not output a dir besides the zip~~
 - internationalization (english UI)
+- primary color system (override by pack if defines a new one)
+- start screen with witaj logo (shown on first startup for as long as necessary or at least 1 second)
 - uplaod on iOS and Android too see how it goes
 //- pack manager needs to handle hashes when downloading packs/when to download again and unpack again => specification for packet source?
 - pack language versions

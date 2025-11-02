@@ -1,4 +1,7 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { usePrimaryColor } from '@/hooks/usePrimaryColor';
+import { withAlpha } from '@/theme/colors';
 
 interface Props {
   completedTopics: number;
@@ -16,6 +19,8 @@ export function VocabularyProgressSummaryCard({
   percentComplete,
 }: Props) {
   const percentLabel = Math.round(percentComplete * 100);
+  const primaryColor = usePrimaryColor();
+  const styles = useMemo(() => createStyles(primaryColor), [primaryColor]);
 
   return (
     <View style={styles.container}>
@@ -48,76 +53,81 @@ export function VocabularyProgressSummaryCard({
     </View>
   );
 }
+function createStyles(primaryColor: string) {
+  const textOnPrimary = '#FFFFFF';
+  const subtleOnPrimary = withAlpha('#FFFFFF', 0.7);
+  const mutedOnPrimary = withAlpha('#FFFFFF', 0.5);
+  const dividerOnPrimary = withAlpha('#FFFFFF', 0.3);
+  const trackOnPrimary = withAlpha('#FFFFFF', 0.2);
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#0F1115',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 24,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#E5E7EB',
-  },
-  badge: {
-    backgroundColor: '#2563EB',
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  badgeText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  statBlock: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 4,
-  },
-  statValue: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#F8FAFC',
-  },
-  statLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#CBD5F5',
-  },
-  statHint: {
-    fontSize: 12,
-    color: '#94A3B8',
-  },
-  divider: {
-    width: 1,
-    height: '100%',
-    backgroundColor: '#1F2937',
-    marginHorizontal: 12,
-  },
-  progressBar: {
-    height: 10,
-    backgroundColor: '#1F2937',
-    borderRadius: 999,
-    marginTop: 20,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#10B981',
-  },
-});
-
-
+  return StyleSheet.create({
+    container: {
+      backgroundColor: primaryColor,
+      borderRadius: 20,
+      padding: 20,
+      marginBottom: 24,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    title: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: textOnPrimary,
+    },
+    badge: {
+      backgroundColor: withAlpha('#FFFFFF', 0.2),
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+    },
+    badgeText: {
+      color: textOnPrimary,
+      fontWeight: '600',
+    },
+    statsRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 16,
+    },
+    statBlock: {
+      flex: 1,
+      alignItems: 'center',
+      gap: 4,
+    },
+    statValue: {
+      fontSize: 28,
+      fontWeight: '700',
+      color: textOnPrimary,
+    },
+    statLabel: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: subtleOnPrimary,
+    },
+    statHint: {
+      fontSize: 12,
+      color: mutedOnPrimary,
+    },
+    divider: {
+      width: 1,
+      height: '100%',
+      backgroundColor: dividerOnPrimary,
+      marginHorizontal: 12,
+    },
+    progressBar: {
+      height: 10,
+      backgroundColor: trackOnPrimary,
+      borderRadius: 999,
+      marginTop: 20,
+      overflow: 'hidden',
+    },
+    progressFill: {
+      height: '100%',
+      backgroundColor: textOnPrimary,
+    },
+  });
+}

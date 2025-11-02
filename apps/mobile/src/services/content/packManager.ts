@@ -3,6 +3,7 @@ import { Directory, File, Paths } from 'expo-file-system';
 import { ModuleAvailability } from '@/types/content';
 import { loadPackContentFromDb, SqlitePackContent } from '@/services/content/sqlitePackLoader';
 import { provisionPacks } from '@/services/content/packProvisioner';
+import { normalizeHexColor } from '@/theme/colors';
 
 export interface PackSummary {
   packId: string;
@@ -11,6 +12,7 @@ export interface PackSummary {
   packDir: Directory;
   modules: ModuleAvailability;
   contentFile: string;
+  primaryColor?: string;
 }
 
 interface PackManifest {
@@ -19,6 +21,7 @@ interface PackManifest {
   contentVersion: string;
   modules: ModuleAvailability;
   contentFile?: string;
+  primaryColor?: string;
 }
 
 function joinDirectory(base: Directory, name: string): Directory {
@@ -114,6 +117,11 @@ class PackManager {
     }
   }
 
+  getPackPrimaryColor(packId: string): string | undefined {
+    const summary = this.availablePacks.find((entry) => entry.packId === packId);
+    return summary?.primaryColor;
+  }
+
   async getModuleAvailability(packId: string): Promise<ModuleAvailability> {
     const summary = this.availablePacks.find((entry) => entry.packId === packId);
     return summary?.modules ?? { vocabulary: false, phrases: false, hundredSeconds: false };
@@ -185,6 +193,7 @@ class PackManager {
       }
 
       const contentFile = manifest.contentFile ?? 'content.db';
+      const primaryColor = normalizeHexColor(manifest.primaryColor);
       summaries.push({
         packId: manifest.packId,
         displayName: manifest.displayName,
@@ -192,6 +201,7 @@ class PackManager {
         modules: manifest.modules,
         contentFile,
         packDir: entry,
+        primaryColor,
       });
     }
 

@@ -195,20 +195,27 @@ export default function PhraseTopicRoute() {
       <FlatList
         data={data}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
+        renderItem={({ item }) => {
+          const isSeparator = item.type === 'separator';
+          const sorbianLine = item.sorbianText?.trim().length ? item.sorbianText : item.germanText;
+          const hasTranslationLine =
+            !!item.germanText?.trim().length && item.germanText.trim() !== sorbianLine?.trim();
+
+          return (
           <TouchableOpacity
             style={[styles.item, currentItemId === item.id && styles.itemPlaying]}
             onPress={() => playPhrase(item)}
             disabled={autoMode}
           >
-            <Text style={styles.primary}>{item.germanText}</Text>
-            <Text style={styles.secondary}>{item.sorbianText}</Text>
-            {item.type === 'separator' ? (
+              {!isSeparator && sorbianLine ? <Text style={styles.primary}>{sorbianLine}</Text> : null}
+              {!isSeparator && hasTranslationLine ? <Text style={styles.secondary}>{item.germanText}</Text> : null}
+              {isSeparator ? (
               <Text style={styles.separator}>{item.germanText}</Text>
             ) : null}
             {item.infoText ? <Text style={styles.info}>{item.infoText}</Text> : null}
           </TouchableOpacity>
-        )}
+          );
+        }}
       />
 
     </Screen>

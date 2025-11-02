@@ -21,19 +21,20 @@ Bundled packs are zipped with the pack root as the top-level directory (see `zip
 
 ```
 {
-  "packId": "legacy-pack",
-  "displayName": "Legacy Pack",
+  "packId": "de-dsb-pack",
+  "displayName": "DE_DSB Pack",
   "contentVersion": "1.0.0",
   "modules": {
     "vocabulary": true,
     "phrases": true,
     "hundredSeconds": true
   },
-  "contentFile": "content.db"
+  "contentFile": "content.db",
+  "primaryColor": "#A91A36"
 }
 ```
 
-Modules informs the app which learning flows are available for this pack.
+Modules informs the app which learning flows are available for this pack. `primaryColor` is optional; when present it overrides the app default primary color for theming.
 
 ## SQLite Schema (`content.db`)
 

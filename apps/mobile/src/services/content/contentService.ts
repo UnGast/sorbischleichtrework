@@ -7,11 +7,13 @@ import {
   setVocabulary,
   setContentLoading,
 } from '@/store/slices/contentSlice';
-import { setBootstrapStatus, setAppError, setActivePack } from '@/store/slices/appSlice';
+import { setBootstrapStatus, setAppError, setActivePack, setPrimaryColor } from '@/store/slices/appSlice';
 import { packManager } from './packManager';
 import { progressDatabase } from '@/services/db/progressDatabase';
 import { loadProgressForPack } from '@/store/slices/progressSlice';
 import { provisionPacks } from '@/services/content/packProvisioner';
+import { DEFAULT_PRIMARY_COLOR } from '@/theme/colors';
+import { MAIN_PACK_ID } from '@/models/PackIDs';
 
 export async function initializeContent() {
   const { dispatch } = store;
@@ -34,9 +36,12 @@ export async function initializeContent() {
       throw new Error('No content packs available');
     }
 
-    const activePack = availablePacks[0];
+    const activePack =
+      availablePacks.find((pack) => pack.packId === MAIN_PACK_ID) ?? availablePacks[0];
     dispatch(setActivePack(activePack.packId));
     await packManager.activatePack(activePack.packId);
+    const primaryColor = packManager.getPackPrimaryColor(activePack.packId) ?? DEFAULT_PRIMARY_COLOR;
+    dispatch(setPrimaryColor(primaryColor));
     await store.dispatch(loadProgressForPack(activePack.packId));
 
     const packData = await packManager.loadPackContent(activePack.packId);
@@ -78,8 +83,10 @@ export async function loadLegacyContent() {
   await provisionPacks();
   await packManager.init();
 
-  const fallbackPackId = 'legacy-pack';
+  const fallbackPackId = MAIN_PACK_ID;
   dispatch(setActivePack(fallbackPackId));
+  await packManager.activatePack(fallbackPackId);
+  dispatch(setPrimaryColor(packManager.getPackPrimaryColor(fallbackPackId) ?? DEFAULT_PRIMARY_COLOR));
   await store.dispatch(loadProgressForPack(fallbackPackId));
 
   const packData = await packManager.loadPackContent(fallbackPackId);

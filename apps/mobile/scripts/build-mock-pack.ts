@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -5,6 +6,7 @@ import Database from 'better-sqlite3';
 import * as yazl from 'yazl';
 
 import { mockHundredSeconds, mockPhrases, mockTopics, mockVocabulary } from '@/services/content/mockData';
+import { DEFAULT_PRIMARY_COLOR } from '@/theme/colors';
 
 const ROOT = path.resolve(__dirname, '..');
 const PACK_ID = 'mock-pack';
@@ -24,6 +26,7 @@ const PACK_MANIFEST = {
     hundredSeconds: true,
   },
   contentFile: 'content.db',
+  primaryColor: DEFAULT_PRIMARY_COLOR,
 };
 
 function ensureDir(dirPath: string) {
@@ -248,6 +251,12 @@ function zipDirectory(srcDir: string, zipPath: string, rootName: string) {
   });
 }
 
+function writeSha256(filePath: string, outputPath: string) {
+  const fileBuffer = fs.readFileSync(filePath);
+  const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+  fs.writeFileSync(outputPath, hash, 'utf-8');
+}
+
 async function main() {
   if (fs.existsSync(TEMP_DIR)) {
     fs.rmSync(TEMP_DIR, { recursive: true, force: true });
@@ -270,8 +279,11 @@ async function main() {
 
   // Copy to dev content directory for simulator use
   const zipPath = path.join(ROOT, 'assets', 'packs', `${PACK_ID}.zip`);
+  const hashPath = path.join(ROOT, 'assets', 'packs', `${PACK_ID}.sha256`);
   console.log(`[mock-pack] Creating zip at ${zipPath}`);
   await zipDirectory(TEMP_DIR, zipPath, PACK_ID);
+  writeSha256(zipPath, hashPath);
+  console.log(`[mock-pack] Wrote SHA256 hash to ${hashPath}`);
 
   console.log(`[mock-pack] Content pack built at ${TEMP_DIR} and zipped to ${zipPath}`);
 

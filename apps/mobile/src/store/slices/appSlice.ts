@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { DEFAULT_PRIMARY_COLOR } from '@/theme/colors';
 
 export type PackMode = 'selector' | 'fixed';
 export type BootstrapStatus = 'idle' | 'initializing' | 'ready' | 'error';
@@ -9,11 +10,13 @@ export interface AppState {
   activePackId?: string;
   errorMessage?: string;
   lastActionAt?: number;
+  primaryColor: string;
 }
 
 const initialState: AppState = {
   bootstrapStatus: 'idle',
   packMode: 'selector',
+  primaryColor: DEFAULT_PRIMARY_COLOR,
 };
 
 const appSlice = createSlice({
@@ -39,10 +42,13 @@ const appSlice = createSlice({
     setLastActionAt(state, action: PayloadAction<number | undefined>) {
       state.lastActionAt = action.payload;
     },
+    setPrimaryColor(state, action: PayloadAction<string | undefined>) {
+      state.primaryColor = action.payload ?? DEFAULT_PRIMARY_COLOR;
+    },
     resetAppState: () => initialState,
   },
 });
 
-export const { setBootstrapStatus, setActivePack, setPackMode, setAppError, setLastActionAt, resetAppState } = appSlice.actions;
+export const { setBootstrapStatus, setActivePack, setPackMode, setAppError, setLastActionAt, setPrimaryColor, resetAppState } = appSlice.actions;
 export default appSlice.reducer;
 

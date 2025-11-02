@@ -11,6 +11,7 @@ import { createHash } from 'node:crypto';
 
 import { convertLegacyContent } from './legacy/convertLegacyCore';
 import type { LegacyConversionResult, AssetManifestEntry } from './legacy/convertLegacyCore';
+import { DEFAULT_PRIMARY_COLOR } from '@/theme/colors';
 
 interface ConvertOptions {
   legacyRoot: string;
@@ -195,6 +196,7 @@ function writeManifest(destPath: string, options: ConvertOptions) {
       hundredSeconds: true,
     },
     contentFile: 'content.db',
+    primaryColor: DEFAULT_PRIMARY_COLOR,
   };
   fs.writeFileSync(destPath, JSON.stringify(manifest, null, 2), 'utf-8');
 }
