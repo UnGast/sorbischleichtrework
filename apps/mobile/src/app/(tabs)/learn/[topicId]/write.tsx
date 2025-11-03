@@ -13,6 +13,8 @@ import {
   setTopicCompletionStatus,
 } from '@/store/slices/progressSlice';
 import { useActivePackId } from '@/hooks/useActivePackId';
+import { usePrimaryColor } from '@/hooks/usePrimaryColor';
+import { withAlpha } from '@/theme/colors';
 
 type LetterTile = {
   id: string;
@@ -34,6 +36,7 @@ export default function VocabularyWriteRoute() {
   const items = useResolvedVocabularyForTopic(topicId ?? '');
   const dispatch = useAppDispatch();
   const activePackId = useActivePackId();
+  const primaryColor = usePrimaryColor();
   const exercises = useMemo(() => items.filter((item) => !item.ignoreWrite), [items]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [availableTiles, setAvailableTiles] = useState<LetterTile[]>([]);
@@ -243,7 +246,7 @@ export default function VocabularyWriteRoute() {
   }
 
   return (
-    <Screen>
+    <Screen padded>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -251,14 +254,17 @@ export default function VocabularyWriteRoute() {
       >
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
           <Text style={styles.prompt}>Schreibe das sorbische Wort für</Text>
-          <Text style={styles.german}>{currentItem.textGerman}</Text>
+          <Text style={[styles.german, { color: primaryColor }]}>{currentItem.textGerman}</Text>
 
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>Deine Antwort</Text>
             <View
               style={[
                 styles.answerBox,
-                isCorrect === true && styles.answerCorrect,
+                isCorrect === true && {
+                  borderColor: primaryColor,
+                  backgroundColor: withAlpha(primaryColor, 0.12),
+                },
                 isCorrect === false && styles.answerIncorrect,
               ]}
             >
@@ -271,7 +277,10 @@ export default function VocabularyWriteRoute() {
                   {selectedTiles.map((tile, index) => (
                     <TouchableOpacity
                       key={tile.id}
-                      style={styles.selectedTile}
+                      style={[
+                        styles.selectedTile,
+                        { backgroundColor: primaryColor, shadowColor: primaryColor },
+                      ]}
                       onPress={() => handleSelectedTilePress(tile.id)}
                       accessibilityRole="button"
                       accessibilityLabel={`Ausgewählter Buchstabe ${tile.char}`}
@@ -287,18 +296,26 @@ export default function VocabularyWriteRoute() {
 
             <View style={styles.answerActions}>
               <TouchableOpacity
-                style={[styles.actionChip, selectedTiles.length === 0 && styles.actionChipDisabled]}
+              style={[
+                styles.actionChip,
+                { backgroundColor: withAlpha(primaryColor, 0.12) },
+                selectedTiles.length === 0 && styles.actionChipDisabled,
+              ]}
                 onPress={handleUndo}
                 disabled={selectedTiles.length === 0}
               >
                 <Text
-                  style={[styles.actionChipText, selectedTiles.length === 0 && styles.actionChipTextDisabled]}
+                style={[
+                  styles.actionChipText,
+                  { color: primaryColor },
+                  selectedTiles.length === 0 && styles.actionChipTextDisabled,
+                ]}
                 >
                   Löschen
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.actionChip}
+              style={[styles.actionChip, { backgroundColor: withAlpha(primaryColor, 0.12) }]}
                 onPress={() => {
                   if (!currentItem) {
                     return;
@@ -308,7 +325,7 @@ export default function VocabularyWriteRoute() {
                   setIsCorrect(null);
                 }}
               >
-                <Text style={styles.actionChipText}>Neu mischen</Text>
+              <Text style={[styles.actionChipText, { color: primaryColor }]}>Neu mischen</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -322,13 +339,19 @@ export default function VocabularyWriteRoute() {
                 availableTiles.map((tile) => (
                   <TouchableOpacity
                     key={tile.id}
-                    style={styles.letterTile}
+                    style={[
+                      styles.letterTile,
+                      {
+                        borderColor: withAlpha(primaryColor, 0.35),
+                        shadowColor: withAlpha(primaryColor, 0.35),
+                      },
+                    ]}
                     onPress={() => handleSelectTile(tile.id)}
                     accessibilityRole="button"
                     accessibilityLabel={`Buchstabe ${tile.char}`}
                     activeOpacity={0.85}
                   >
-                    <Text style={styles.letterText}>{tile.char}</Text>
+                    <Text style={[styles.letterText, { color: primaryColor }]}>{tile.char}</Text>
                   </TouchableOpacity>
                 ))
               )}
@@ -343,7 +366,16 @@ export default function VocabularyWriteRoute() {
           <View style={styles.actions}>
             <TouchableOpacity
               onPress={handleSubmit}
-              style={[styles.primaryButton, isCorrect === true && styles.primaryButtonReady]}
+              style={[
+                styles.primaryButton,
+                {
+                  backgroundColor:
+                    isCorrect === true
+                      ? primaryColor
+                      : withAlpha(primaryColor, isCorrect === false ? 0.45 : 0.7),
+                },
+                { padding: 16 },
+              ]}
             >
               <Text style={styles.primaryText}>
                 {isCorrect === true
@@ -367,7 +399,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
+    paddingTop: 16,
     paddingBottom: 48,
   },
   prompt: {
@@ -379,13 +411,11 @@ const styles = StyleSheet.create({
   german: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#2563EB',
     textAlign: 'center',
     marginVertical: 16,
   },
   scrambleBox: {
     borderWidth: 2,
-    borderColor: '#2563EB',
     borderStyle: 'dashed',
     padding: 16,
     borderRadius: 16,
@@ -431,17 +461,10 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     marginTop: 24,
-    backgroundColor: '#2563EB',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  primaryButtonReady: {
-    backgroundColor: '#10B981',
-  },
-  primaryButtonDisabled: {
-    backgroundColor: '#93C5FD',
   },
   primaryText: {
     color: '#FFFFFF',
@@ -451,11 +474,6 @@ const styles = StyleSheet.create({
   secondaryButton: {
     paddingHorizontal: 24,
     paddingVertical: 14,
-  },
-  secondaryText: {
-    color: '#2563EB',
-    fontSize: 16,
-    fontWeight: '600',
   },
   empty: {
     fontSize: 16,
@@ -474,15 +492,10 @@ const styles = StyleSheet.create({
   },
   answerBox: {
     borderWidth: 2,
-    borderColor: '#DBEAFE',
-    backgroundColor: '#EFF6FF',
     borderRadius: 18,
     paddingVertical: 16,
     paddingHorizontal: 20,
-  },
-  answerCorrect: {
-    borderColor: '#6EE7B7',
-    backgroundColor: '#ECFDF5',
+    backgroundColor: '#FFFFFF',
   },
   answerIncorrect: {
     borderColor: '#FCA5A5',
@@ -515,7 +528,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 999,
-    backgroundColor: '#E0E7FF',
   },
   actionChipDisabled: {
     backgroundColor: '#F3F4F6',
@@ -523,7 +535,6 @@ const styles = StyleSheet.create({
   actionChipText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1E3A8A',
   },
   actionChipTextDisabled: {
     color: '#9CA3AF',
@@ -533,9 +544,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 16,
-    backgroundColor: '#2563EB',
     alignItems: 'center',
-    shadowColor: '#1E3A8A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
@@ -564,10 +573,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#CBD5F5',
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
-    shadowColor: '#1E3A8A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 5,
@@ -576,7 +583,6 @@ const styles = StyleSheet.create({
   letterText: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#1E3A8A',
   },
 });
 

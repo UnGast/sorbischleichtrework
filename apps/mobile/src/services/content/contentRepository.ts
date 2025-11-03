@@ -39,6 +39,7 @@ export function usePhrasesForTopic(topicId: string) {
 
 export interface ResolvedVocabItem extends VocabItem {
   audioUri?: string;
+  imageUri?: string;
 }
 
 export function useResolvedVocabularyForTopic(topicId: string): ResolvedVocabItem[] {
@@ -46,12 +47,13 @@ export function useResolvedVocabularyForTopic(topicId: string): ResolvedVocabIte
 
   return useMemo(() => {
     return items.map((item) => {
-
       const audioUri = item.audioSorbian ? packManager.resolveAssetUri(item.audioSorbian) ?? item.audioSorbian : undefined;
+      const imageUri = item.img ? packManager.resolveAssetUri(item.img) ?? item.img : undefined;
 
       return {
         ...item,
         audioUri,
+        imageUri,
       };
     });
   }, [items]);

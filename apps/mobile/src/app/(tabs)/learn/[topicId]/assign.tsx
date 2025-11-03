@@ -9,8 +9,10 @@ import { useAppDispatch } from '@/store';
 import { setStep } from '@/services/content/vocabularySessionSlice';
 import { logProgressActivity, recordProgressAttempt } from '@/store/slices/progressSlice';
 import { useActivePackId } from '@/hooks/useActivePackId';
+import { usePrimaryColor } from '@/hooks/usePrimaryColor';
+import { withAlpha } from '@/theme/colors';
 
-const OPTION_WIDTH = Dimensions.get('window').width - 48;
+const OPTION_WIDTH = Dimensions.get('window').width - 64;
 
 interface OptionItem {
   id: string;
@@ -25,6 +27,7 @@ export default function VocabularyAssignRoute() {
   const vocabItems = useResolvedVocabularyForTopic(topicId ?? '');
   const dispatch = useAppDispatch();
   const activePackId = useActivePackId();
+  const primaryColor = usePrimaryColor();
 
   const prompts = useMemo(() => vocabItems.filter((item) => !item.ignoreAssign), [vocabItems]);
 
@@ -153,10 +156,12 @@ export default function VocabularyAssignRoute() {
   }
 
   return (
-    <Screen>
-      <Text style={styles.heading}>Welche sorbische Übersetzung passt?</Text>
-      <View style={styles.promptBox}>
-        <Text style={styles.promptText}>{currentItem?.textGerman}</Text>
+    <Screen padded>
+      <Text style={[styles.heading, { color: primaryColor }]}>
+        Welche sorbische Übersetzung passt?
+      </Text>
+      <View style={[styles.promptBox, { backgroundColor: withAlpha(primaryColor, 0.12) }]}>
+        <Text style={[styles.promptText, { color: primaryColor }]}>{currentItem?.textGerman}</Text>
       </View>
 
       <View style={styles.optionsContainer}>
@@ -169,7 +174,10 @@ export default function VocabularyAssignRoute() {
               key={option.id}
               style={[
                 styles.option,
-                isCorrect && styles.optionCorrect,
+                isCorrect && {
+                  borderColor: primaryColor,
+                  backgroundColor: withAlpha(primaryColor, 0.18),
+                },
                 isIncorrect && !option.isCorrect && styles.optionIncorrect,
               ]}
               onPress={() => handleOptionPress(option)}
@@ -186,7 +194,11 @@ export default function VocabularyAssignRoute() {
           {Math.min(currentIndex + 1, totalCount)} / {totalCount}
         </Text>
         <TouchableOpacity
-          style={[styles.ctaButton, !allDone && styles.ctaButtonDisabled]}
+          style={[
+            styles.ctaButton,
+            { backgroundColor: primaryColor },
+            !allDone && { backgroundColor: withAlpha(primaryColor, 0.35) },
+          ]}
           onPress={navigateToWrite}
           disabled={!allDone}
         >
@@ -201,8 +213,8 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#111827',
     textAlign: 'center',
+    marginTop: 16,
     marginBottom: 24,
   },
   promptBox: {
@@ -217,11 +229,12 @@ const styles = StyleSheet.create({
   promptText: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#1D4ED8',
     textAlign: 'center',
   },
   optionsContainer: {
     alignItems: 'center',
+    marginTop: 8,
+    paddingHorizontal: 16,
   },
   option: {
     width: OPTION_WIDTH,
@@ -238,10 +251,6 @@ const styles = StyleSheet.create({
     color: '#111827',
     textAlign: 'center',
   },
-  optionCorrect: {
-    borderColor: '#10B981',
-    backgroundColor: '#D1FAE5',
-  },
   optionIncorrect: {
     borderColor: '#F87171',
     backgroundColor: '#FEE2E2',
@@ -256,13 +265,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   ctaButton: {
-    backgroundColor: '#10B981',
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 28,
-  },
-  ctaButtonDisabled: {
-    backgroundColor: '#6EE7B7',
   },
   ctaText: {
     color: '#FFFFFF',

@@ -54,18 +54,25 @@ export function VocabularyProgressSummaryCard({
   );
 }
 function createStyles(primaryColor: string) {
-  const textOnPrimary = '#FFFFFF';
-  const subtleOnPrimary = withAlpha('#FFFFFF', 0.7);
-  const mutedOnPrimary = withAlpha('#FFFFFF', 0.5);
-  const dividerOnPrimary = withAlpha('#FFFFFF', 0.3);
-  const trackOnPrimary = withAlpha('#FFFFFF', 0.2);
+  const softPrimary = withAlpha(primaryColor, 0.12);
+  const midPrimary = withAlpha(primaryColor, 0.5);
+  const lightPrimary = withAlpha(primaryColor, 0.2);
+  const textColor = '#111827';
+  const mutedText = '#4B5563';
 
   return StyleSheet.create({
     container: {
-      backgroundColor: primaryColor,
+      backgroundColor: '#FFFFFF',
       borderRadius: 20,
       padding: 20,
       marginBottom: 24,
+      borderWidth: 1,
+      borderColor: lightPrimary,
+      shadowColor: withAlpha('#000000', 0.08),
+      shadowOpacity: 0.8,
+      shadowRadius: 20,
+      shadowOffset: { width: 0, height: 10 },
+      elevation: 4,
     },
     headerRow: {
       flexDirection: 'row',
@@ -75,16 +82,16 @@ function createStyles(primaryColor: string) {
     title: {
       fontSize: 18,
       fontWeight: '700',
-      color: textOnPrimary,
+      color: textColor,
     },
     badge: {
-      backgroundColor: withAlpha('#FFFFFF', 0.2),
+      backgroundColor: softPrimary,
       borderRadius: 999,
       paddingHorizontal: 12,
       paddingVertical: 6,
     },
     badgeText: {
-      color: textOnPrimary,
+      color: primaryColor,
       fontWeight: '600',
     },
     statsRow: {
@@ -101,33 +108,33 @@ function createStyles(primaryColor: string) {
     statValue: {
       fontSize: 28,
       fontWeight: '700',
-      color: textOnPrimary,
+      color: primaryColor,
     },
     statLabel: {
       fontSize: 14,
       fontWeight: '600',
-      color: subtleOnPrimary,
+      color: textColor,
     },
     statHint: {
       fontSize: 12,
-      color: mutedOnPrimary,
+      color: mutedText,
     },
     divider: {
       width: 1,
       height: '100%',
-      backgroundColor: dividerOnPrimary,
+      backgroundColor: lightPrimary,
       marginHorizontal: 12,
     },
     progressBar: {
       height: 10,
-      backgroundColor: trackOnPrimary,
+      backgroundColor: lightPrimary,
       borderRadius: 999,
       marginTop: 20,
       overflow: 'hidden',
     },
     progressFill: {
       height: '100%',
-      backgroundColor: textOnPrimary,
+      backgroundColor: primaryColor,
     },
   });
 }

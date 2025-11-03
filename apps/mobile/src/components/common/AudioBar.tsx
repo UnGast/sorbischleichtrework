@@ -1,6 +1,8 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { useAudioPlayback } from '@/hooks/useAudioPlayback';
 import { Ionicons } from '@expo/vector-icons';
+import { usePrimaryColor } from '@/hooks/usePrimaryColor';
+import { withAlpha } from '@/theme/colors';
 
 export function AudioBar() {
   const {
@@ -12,6 +14,7 @@ export function AudioBar() {
     togglePlay,
     seekTo,
   } = useAudioPlayback();
+  const primaryColor = usePrimaryColor();
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -30,13 +33,18 @@ export function AudioBar() {
       <View style={styles.progressContainer}>
         <Text style={styles.time}>{formatTime(positionSeconds)}</Text>
         <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+          <View
+            style={[styles.progressFill, { width: `${progress * 100}%`, backgroundColor: primaryColor }]}
+          />
         </View>
         <Text style={styles.time}>{formatTime(durationSeconds)}</Text>
       </View>
 
       <View style={styles.controls}>
-        <TouchableOpacity onPress={togglePlay} style={styles.controlButton}>
+        <TouchableOpacity
+          onPress={togglePlay}
+          style={[styles.controlButton, { backgroundColor: primaryColor }]}
+        >
           <Ionicons
             name={isPlaying ? 'pause' : 'play'}
             size={24}
@@ -54,9 +62,9 @@ export function AudioBar() {
         </View>
 
         {isAutoModeEnabled && (
-          <View style={styles.autoModeIndicator}>
-            <Ionicons name="repeat" size={16} color="#10B981" />
-            <Text style={styles.autoModeText}>Auto</Text>
+          <View style={[styles.autoModeIndicator, { backgroundColor: withAlpha(primaryColor, 0.2) }]}>
+            <Ionicons name="repeat" size={16} color={primaryColor} />
+            <Text style={[styles.autoModeText, { color: primaryColor }]}>Auto</Text>
           </View>
         )}
       </View>
@@ -93,7 +101,6 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#3B82F6',
   },
   controls: {
     flexDirection: 'row',
@@ -105,7 +112,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#3B82F6',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -126,13 +132,11 @@ const styles = StyleSheet.create({
   autoModeIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#065F46',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
   autoModeText: {
-    color: '#10B981',
     fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,

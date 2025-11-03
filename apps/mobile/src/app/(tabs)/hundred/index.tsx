@@ -3,6 +3,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/common/Screen';
 import { useHundredSecondsItems } from '@/services/content/contentRepository';
 import { useAudioPlayback } from '@/hooks/useAudioPlayback';
+import { usePrimaryColor } from '@/hooks/usePrimaryColor';
+import { withAlpha } from '@/theme/colors';
 import type { ListRenderItemInfo } from 'react-native';
 
 const DEFAULT_ARTWORK = require('@assets/images/Fotolia_46575927_S.jpg');
@@ -16,6 +18,7 @@ function formatTime(valueSeconds: number) {
 export default function HundredSecondsRoute() {
   const items = useHundredSecondsItems();
   const playback = useAudioPlayback();
+  const primaryColor = usePrimaryColor();
 
   if (items.length === 0) {
     return (
@@ -57,7 +60,16 @@ export default function HundredSecondsRoute() {
     };
 
     return (
-      <View style={[styles.card, isActive && styles.cardActive]}>
+      <View
+        style={[
+          styles.card,
+          isActive && {
+            borderColor: primaryColor,
+            borderWidth: 2,
+            backgroundColor: withAlpha(primaryColor, 0.08),
+          },
+        ]}
+      >
         <View style={styles.cardHeader}>
           <Image source={artworkSource} style={styles.artwork} />
           <View style={styles.headerText}>
@@ -68,7 +80,11 @@ export default function HundredSecondsRoute() {
 
         <View style={styles.playerRow}>
           <TouchableOpacity
-            style={[styles.playButton, isPlaying && styles.playButtonActive]}
+            style={[
+              styles.playButton,
+              { backgroundColor: primaryColor },
+              isPlaying && { backgroundColor: withAlpha(primaryColor, 0.7) },
+            ]}
             onPress={handlePlayPress}
             activeOpacity={0.85}
           >
@@ -77,7 +93,9 @@ export default function HundredSecondsRoute() {
 
           <View style={styles.progressSection}>
             <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+              <View
+                style={[styles.progressFill, { width: `${progress * 100}%`, backgroundColor: primaryColor }]}
+              />
             </View>
 
             <View style={styles.timeRow}>
@@ -146,10 +164,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
   },
-  cardActive: {
-    borderWidth: 2,
-    borderColor: '#2563EB',
-  },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -182,13 +196,9 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#1E3A8A',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
-  },
-  playButtonActive: {
-    backgroundColor: '#2563EB',
   },
   progressSection: {
     flex: 1,
@@ -201,7 +211,6 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#2563EB',
   },
   timeRow: {
     marginTop: 6,

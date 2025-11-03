@@ -10,10 +10,10 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
-        tabBarActiveTintColor: '#6E9CFD',
-        headerStyle: { backgroundColor: '#0F1115' },
-        headerTintColor: '#E5E7EB',
-        tabBarStyle: { backgroundColor: '#0F1115' },
+        tabBarActiveTintColor: '#0F1115',
+        headerStyle: { backgroundColor: '#FFFFFF' },
+        headerTintColor: '#0F1115',
+        tabBarStyle: { backgroundColor: '#FFFFFF', borderTopColor: '#E5E7EB' },
         tabBarIcon: ({ color, size }) => {
           const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
             learn: 'book-outline',

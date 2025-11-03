@@ -7,12 +7,15 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { selectTopicCompletion, setTopicCompletionStatus } from '@/store/slices/progressSlice';
 import { useResolvedVocabularyForTopic } from '@/services/content/contentRepository';
 import { useTopicProgressSummary } from '@/hooks/useTopicProgress';
+import { usePrimaryColor } from '@/hooks/usePrimaryColor';
+import { withAlpha } from '@/theme/colors';
 
 export default function TopicCompleteRoute() {
   const { topicId } = useLocalSearchParams<{ topicId: string }>();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const activePackId = useActivePackId();
+  const primaryColor = usePrimaryColor();
   const topicCompletion = useAppSelector((state) =>
     topicId ? selectTopicCompletion(state, topicId) : null,
   );
@@ -29,7 +32,10 @@ export default function TopicCompleteRoute() {
       <Screen>
         <View style={styles.container}>
           <Text style={styles.title}>Thema nicht gefunden.</Text>
-          <TouchableOpacity style={styles.primaryButton} onPress={() => router.replace('/(tabs)/learn')}>
+          <TouchableOpacity
+            style={[styles.primaryButton, { backgroundColor: primaryColor }]}
+            onPress={() => router.replace('/(tabs)/learn')}
+          >
             <Text style={styles.primaryButtonText}>Zur Themenübersicht</Text>
           </TouchableOpacity>
         </View>
@@ -65,8 +71,8 @@ export default function TopicCompleteRoute() {
         <Text style={styles.title}>Gut gemacht!</Text>
         <Text style={styles.subtitle}>Du hast das Thema abgeschlossen.</Text>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Dein Fortschritt</Text>
+        <View style={[styles.card, { backgroundColor: withAlpha(primaryColor, 0.12) }]}>
+          <Text style={[styles.cardTitle, { color: primaryColor }]}>Dein Fortschritt</Text>
           <Text style={styles.cardValue}>
           {progressSummary.masteredExercises} / {progressSummary.totalExercises}
           </Text>
@@ -81,11 +87,17 @@ export default function TopicCompleteRoute() {
         </View>
 
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.primaryButton} onPress={handleBackHome}>
+          <TouchableOpacity
+            style={[styles.primaryButton, { backgroundColor: primaryColor }]}
+            onPress={handleBackHome}
+          >
             <Text style={styles.primaryButtonText}>Zur Themenübersicht</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.secondaryButton} onPress={handleRedoTopic}>
-            <Text style={styles.secondaryButtonText}>Thema wiederholen</Text>
+          <TouchableOpacity
+            style={[styles.secondaryButton, { borderColor: primaryColor }]}
+            onPress={handleRedoTopic}
+          >
+            <Text style={[styles.secondaryButtonText, { color: primaryColor }]}>Thema wiederholen</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -116,13 +128,11 @@ const styles = StyleSheet.create({
     marginTop: 32,
     padding: 24,
     borderRadius: 20,
-    backgroundColor: '#EFF6FF',
     alignItems: 'center',
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#2563EB',
   },
   cardValue: {
     fontSize: 48,
@@ -145,7 +155,6 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   primaryButton: {
-    backgroundColor: '#10B981',
     paddingVertical: 16,
     borderRadius: 999,
     alignItems: 'center',
@@ -159,11 +168,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#10B981',
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#10B981',
     fontSize: 16,
     fontWeight: '600',
   },

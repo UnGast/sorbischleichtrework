@@ -1,4 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { usePrimaryColor } from '@/hooks/usePrimaryColor';
 
 interface TopicTileProps {
   name: string;
@@ -9,17 +10,19 @@ interface TopicTileProps {
 }
 
 export function TopicTile({ name, subtitle, statusLabel, completed = false, onPress }: TopicTileProps) {
+  const primaryColor = usePrimaryColor();
+
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.textContainer}>
         <Text style={styles.name}>{name}</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
         {statusLabel ? (
-          <Text style={[styles.status, completed && styles.statusCompleted]}>{statusLabel}</Text>
+          <Text style={[styles.status, { color: primaryColor }]}>{statusLabel}</Text>
         ) : null}
       </View>
       {completed ? (
-        <View style={styles.badge}>
+        <View style={[styles.badge, { backgroundColor: primaryColor }]}>
           <Text style={styles.badgeText}>✓</Text>
         </View>
       ) : null}
@@ -53,16 +56,12 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 13,
     fontWeight: '500',
-    color: '#1D4ED8',
-  },
-  statusCompleted: {
-    color: '#10B981',
+    color: '#4B5563',
   },
   badge: {
     minWidth: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#10B981',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 12,

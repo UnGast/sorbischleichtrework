@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useGlobalSearchParams, useLocalSearchParams, useRouter } from 'expo-router';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -14,9 +14,11 @@ import { useAppDispatch, useAppSelector } from '@/store';
 import { setPosition, setStep } from '@/services/content/vocabularySessionSlice';
 import { logProgressActivity } from '@/store/slices/progressSlice';
 import { useActivePackId } from '@/hooks/useActivePackId';
+import { usePrimaryColor } from '@/hooks/usePrimaryColor';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SCREEN_HORIZONTAL_PADDING = 16;
+const TOP_SPACER = 24;
 const CARD_MARGIN = 24;
 const CARD_WIDTH = SCREEN_WIDTH - CARD_MARGIN * 2;
 const PAGE_WIDTH = CARD_WIDTH + CARD_MARGIN * 2;
@@ -118,6 +120,8 @@ export default function VocabularyReadRoute() {
     transform: [{ translateX: translateX.value }],
   }));
 
+  const primaryColor = usePrimaryColor();
+
   if (!currentItem) {
     return (
       <Screen>
@@ -132,6 +136,13 @@ export default function VocabularyReadRoute() {
         <Animated.View style={[styles.carousel, animatedStyle]}> 
           {orderedItems.map((item) => (
             <View key={item.id} style={styles.card}>
+              {item.imageUri ? (
+                <Image
+                  source={{ uri: item.imageUri }}
+                  style={styles.cardImage}
+                  resizeMode="contain"
+                />
+              ) : null}
               <Text style={styles.german}>{item.textGerman}</Text>
               <Text style={styles.sorbian}>{item.textSorbian}</Text>
             </View>
@@ -141,14 +152,26 @@ export default function VocabularyReadRoute() {
 
       <View style={styles.controlsRow}>
         <TouchableOpacity onPress={goPrevious} disabled={index === 0} style={styles.secondaryButton}>
-          <Text style={[styles.secondaryButtonText, index === 0 && styles.secondaryButtonDisabled]}>Zurück</Text>
+          <Text
+            style={[
+              styles.secondaryButtonText,
+              { color: primaryColor },
+              index === 0 && styles.secondaryButtonDisabled,
+            ]}
+          >
+            Zurück
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={playCurrent} style={styles.primaryButton}>
+        <TouchableOpacity onPress={playCurrent} style={[styles.primaryButton, { backgroundColor: primaryColor }]}>
           <Text style={styles.primaryButtonText}>Anhören</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={goNext} disabled={index === orderedItems.length - 1} style={styles.secondaryButton}>
           <Text
-            style={[styles.secondaryButtonText, index === orderedItems.length - 1 && styles.secondaryButtonDisabled]}
+            style={[
+              styles.secondaryButtonText,
+              { color: primaryColor },
+              index === orderedItems.length - 1 && styles.secondaryButtonDisabled,
+            ]}
           >
             Weiter
           </Text>
@@ -156,7 +179,10 @@ export default function VocabularyReadRoute() {
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity onPress={navigateToAssign} style={styles.ctaButton}>
+        <TouchableOpacity
+          onPress={navigateToAssign}
+          style={[styles.ctaButton, { backgroundColor: primaryColor }]}
+        >
           <Text style={styles.ctaText}>Zum Zuordnen</Text>
         </TouchableOpacity>
       </View>
@@ -166,7 +192,7 @@ export default function VocabularyReadRoute() {
 
 const styles = StyleSheet.create({
   carouselContainer: {
-    marginTop: 16,
+    marginTop: TOP_SPACER,
     marginHorizontal: -SCREEN_HORIZONTAL_PADDING,
     height: 420,
     overflow: 'hidden',
@@ -187,6 +213,11 @@ const styles = StyleSheet.create({
     shadowRadius: 24,
     shadowOffset: { width: 0, height: 12 },
   },
+  cardImage: {
+    width: '100%',
+    height: 180,
+    marginBottom: 24,
+  },
   german: {
     fontSize: 24,
     fontWeight: '600',
@@ -206,7 +237,6 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   primaryButton: {
-    backgroundColor: '#2563EB',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 24,
@@ -221,7 +251,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   secondaryButtonText: {
-    color: '#2563EB',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -233,7 +262,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ctaButton: {
-    backgroundColor: '#10B981',
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 28,

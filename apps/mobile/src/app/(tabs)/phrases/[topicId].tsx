@@ -7,6 +7,8 @@ import { useAudioPlayback } from '@/hooks/useAudioPlayback';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { logProgressActivity } from '@/store/slices/progressSlice';
 import { useActivePackId } from '@/hooks/useActivePackId';
+import { usePrimaryColor } from '@/hooks/usePrimaryColor';
+import { withAlpha } from '@/theme/colors';
 
 export default function PhraseTopicRoute() {
   const { topicId } = useLocalSearchParams<{ topicId: string }>();
@@ -17,6 +19,7 @@ export default function PhraseTopicRoute() {
   const dispatch = useAppDispatch();
   const [autoMode, setAutoMode] = useState(false);
   const activePackId = useActivePackId();
+  const primaryColor = usePrimaryColor();
 
   const data = useMemo(() => phrases, [phrases]);
 
@@ -184,10 +187,19 @@ export default function PhraseTopicRoute() {
       </View>
 
       <TouchableOpacity
-        style={[styles.modeButton, autoMode && styles.modeButtonActive]}
+        style={[
+          styles.modeButton,
+          autoMode && { backgroundColor: primaryColor },
+        ]}
         onPress={autoMode ? stopAutoMode : startAutoMode}
       >
-        <Text style={[styles.modeButtonText, autoMode && styles.modeButtonTextActive]}>
+        <Text
+          style={[
+            styles.modeButtonText,
+            autoMode && { color: '#FFFFFF' },
+            !autoMode && { color: primaryColor },
+          ]}
+        >
           {autoMode ? 'Auto Mode stoppen' : 'Auto Mode starten'}
         </Text>
       </TouchableOpacity>
@@ -204,16 +216,23 @@ export default function PhraseTopicRoute() {
             !!item.germanText?.trim().length && item.germanText.trim() !== sorbianLine?.trim();
 
           return (
-            <TouchableOpacity
-              style={[styles.item, currentItemId === item.id && styles.itemPlaying]}
-              onPress={() => playPhrase(item)}
-              disabled={autoMode}
-            >
+          <TouchableOpacity
+              style={[
+                styles.item,
+                currentItemId === item.id && {
+                  borderColor: primaryColor,
+                  borderWidth: 1,
+                  backgroundColor: withAlpha(primaryColor, 0.08),
+                },
+              ]}
+            onPress={() => playPhrase(item)}
+            disabled={autoMode}
+          >
               {!isSeparator && sorbianLine ? <Text style={styles.primary}>{sorbianLine}</Text> : null}
               {!isSeparator && hasTranslationLine ? <Text style={styles.secondary}>{item.germanText}</Text> : null}
-              {isSeparator ? <Text style={styles.separator}>{item.germanText}</Text> : null}
-              {item.infoText ? <Text style={styles.info}>{item.infoText}</Text> : null}
-            </TouchableOpacity>
+              {isSeparator ? <Text style={[styles.separator, { color: primaryColor }]}>{item.germanText}</Text> : null}
+            {item.infoText ? <Text style={styles.info}>{item.infoText}</Text> : null}
+          </TouchableOpacity>
           );
         }}
         ListEmptyComponent={<Text style={styles.emptyList}>Keine Phrasen verfügbar.</Text>}
@@ -243,28 +262,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     alignSelf: 'flex-start',
   },
-  modeButtonActive: {
-    backgroundColor: '#3B82F6',
-  },
   modeButtonText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#374151',
   },
-  modeButtonTextActive: {
-    color: '#FFFFFF',
-  },
   item: {
     paddingVertical: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#E5E7EB',
-  },
-  itemPlaying: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#3B82F6',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginHorizontal: -1,
   },
   primary: {
     fontSize: 16,

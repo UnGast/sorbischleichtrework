@@ -41,11 +41,11 @@ export function Screen({
           style={[styles.scroll, style]}
           {...rest}
         >
-          {children}
-        </ScrollView>
-      ) : (
+      {children}
+    </ScrollView>
+  ) : (
         <View style={[styles.inner, padded && styles.padded, style]} {...rest}>
-          {children}
+      {children}
         </View>
       )}
     </SafeAreaView>
