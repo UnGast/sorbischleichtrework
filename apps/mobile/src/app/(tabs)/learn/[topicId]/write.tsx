@@ -360,7 +360,7 @@ export default function VocabularyWriteRoute() {
 
           {isCorrect === false ? <Text style={styles.feedbackError}>Fast! Versuche es erneut.</Text> : null}
           {isCorrect === true ? (
-            <Text style={styles.feedbackSuccess}>{`Richtig! ${currentItem.textSorbian}`}</Text>
+            <Text style={[styles.feedbackSuccess, { color: primaryColor }]}>{`Richtig! ${currentItem.textSorbian}`}</Text>
           ) : null}
 
           <View style={styles.actions}>
@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
     borderColor: '#F87171',
   },
   inputSuccess: {
-    borderColor: '#10B981',
+    // borderColor is set dynamically via inline styles with primaryColor
   },
   feedbackError: {
     marginTop: 12,
@@ -450,9 +450,9 @@ const styles = StyleSheet.create({
   },
   feedbackSuccess: {
     marginTop: 12,
-    color: '#059669',
     fontSize: 16,
     textAlign: 'center',
+    // color is set dynamically via inline styles with primaryColor
   },
   actions: {
     flexDirection: 'row',

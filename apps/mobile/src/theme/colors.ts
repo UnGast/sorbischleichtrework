@@ -17,17 +17,19 @@ export function normalizeHexColor(color?: string | null): string | undefined {
 
 export function withAlpha(color: string, alpha: number): string {
   const clampedAlpha = Math.max(0, Math.min(1, alpha));
-  const alphaHex = Math.round(clampedAlpha * 255)
-    .toString(16)
-    .padStart(2, '0')
-    .toUpperCase();
-
+  
   const normalized = normalizeHexColor(color) ?? DEFAULT_PRIMARY_COLOR;
   const hexWithoutHash = normalized.slice(1);
 
   // If the color already contains an alpha component, strip it before applying the new alpha value.
   const rgbHex = hexWithoutHash.length === 8 ? hexWithoutHash.slice(2) : hexWithoutHash;
 
-  return `#${alphaHex}${rgbHex}`;
+  // Convert hex to RGB
+  const r = parseInt(rgbHex.slice(0, 2), 16);
+  const g = parseInt(rgbHex.slice(2, 4), 16);
+  const b = parseInt(rgbHex.slice(4, 6), 16);
+
+  // Return rgba format which is more reliable in React Native
+  return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
 }
 

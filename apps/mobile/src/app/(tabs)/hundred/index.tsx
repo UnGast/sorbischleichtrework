@@ -35,7 +35,8 @@ export default function HundredSecondsRoute() {
 
   const renderItem = ({ item }: ListRenderItemInfo<ReturnType<typeof useHundredSecondsItems>[number]>) => {
     const artworkSource = item.imageUri ? { uri: item.imageUri } : DEFAULT_ARTWORK;
-    const isActive = playback.currentItemId === item.id;
+    const trackId = `hundred-${item.id}`;
+    const isActive = playback.currentItemId === trackId || playback.currentItemId === item.id;
     const isPlaying = isActive && playback.status === 'playing';
     const progress = isActive && playback.durationSeconds > 0 ? Math.min(1, playback.positionSeconds / playback.durationSeconds) : 0;
     const currentPosition = isActive ? playback.positionSeconds : 0;

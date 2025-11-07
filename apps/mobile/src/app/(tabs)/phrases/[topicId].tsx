@@ -285,7 +285,6 @@ const styles = StyleSheet.create({
   separator: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#059669',
     textTransform: 'uppercase',
     marginTop: 8,
     marginBottom: 4,
