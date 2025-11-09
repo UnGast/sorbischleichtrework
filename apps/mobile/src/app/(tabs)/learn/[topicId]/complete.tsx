@@ -66,7 +66,7 @@ export default function TopicCompleteRoute() {
   }, [activePackId, dispatch, router, topicId]);
 
   return (
-    <Screen>
+    <Screen scrollable>
       <View style={styles.container}>
         <Text style={styles.title}>Gut gemacht!</Text>
         <Text style={styles.subtitle}>Du hast das Thema abgeschlossen.</Text>

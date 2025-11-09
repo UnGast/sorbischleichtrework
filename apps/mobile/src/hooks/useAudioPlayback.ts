@@ -57,7 +57,12 @@ export function useAudioPlayback() {
           dispatch(setCurrentTrack(nextEntry.id));
         }
       } else {
-        dispatch(setCurrentTrack(undefined));
+        // Only clear current track if playback has actually stopped
+        // Don't clear during normal playback transitions
+        const currentState = audioStateRef.current;
+        if (currentState.status === 'idle' || currentState.status === 'paused') {
+          dispatch(setCurrentTrack(undefined));
+        }
       }
     },
     [dispatch],
@@ -101,7 +106,10 @@ export function useAudioPlayback() {
 
   const playTrack = async (track: AudioTrack) => {
     await audioService.loadTrack(track);
+    // Set queue and current track together to avoid flicker from multiple state updates
     dispatch(setQueue([track]));
+    // setQueue already sets currentItemId, so we only need to set currentTrackId
+    // This avoids the double update that causes flicker
     dispatch(setCurrentTrack(track.id));
     await audioService.play();
   };

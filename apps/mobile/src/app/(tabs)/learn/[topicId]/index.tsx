@@ -131,7 +131,7 @@ export default function VocabularyReadRoute() {
   }
 
   return (
-    <Screen>
+    <Screen scrollable>
       <View style={styles.carouselContainer}>
         <Animated.View style={[styles.carousel, animatedStyle]}> 
           {orderedItems.map((item) => (
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
   carouselContainer: {
     marginTop: TOP_SPACER,
     marginHorizontal: -SCREEN_HORIZONTAL_PADDING,
-    height: 420,
+    paddingBottom: 24,
     overflow: 'hidden',
   },
   carousel: {

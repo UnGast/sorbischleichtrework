@@ -220,13 +220,15 @@ export default function PhraseTopicRoute() {
               style={[
                 styles.item,
                 currentItemId === item.id && {
-                  borderColor: primaryColor,
-                  borderWidth: 1,
-                  backgroundColor: withAlpha(primaryColor, 0.08),
+                  borderLeftWidth: 4,
+                  borderLeftColor: primaryColor,
+                  backgroundColor: withAlpha(primaryColor, 0.06),
+                  paddingLeft: 12,
                 },
               ]}
             onPress={() => playPhrase(item)}
             disabled={autoMode}
+            activeOpacity={1}
           >
               {!isSeparator && sorbianLine ? <Text style={styles.primary}>{sorbianLine}</Text> : null}
               {!isSeparator && hasTranslationLine ? <Text style={styles.secondary}>{item.germanText}</Text> : null}
@@ -269,6 +271,7 @@ const styles = StyleSheet.create({
   },
   item: {
     paddingVertical: 16,
+    paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#E5E7EB',
   },

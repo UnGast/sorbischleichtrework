@@ -71,7 +71,11 @@ const audioSlice = createSlice({
       }
       const item = state.queue.find((entry) => entry.id === action.payload);
       if (item) {
-        state.currentItemId = item.entityId ?? item.id;
+        const newItemId = item.entityId ?? item.id;
+        // Only update currentItemId if it's different to avoid unnecessary re-renders
+        if (state.currentItemId !== newItemId) {
+          state.currentItemId = newItemId;
+        }
         state.durationSeconds = item.durationSeconds ?? 0;
         state.positionSeconds = 0;
       }

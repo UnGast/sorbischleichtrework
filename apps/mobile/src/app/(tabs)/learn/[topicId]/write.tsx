@@ -246,7 +246,7 @@ export default function VocabularyWriteRoute() {
   }
 
   return (
-    <Screen padded>
+    <Screen padded scrollable>
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
