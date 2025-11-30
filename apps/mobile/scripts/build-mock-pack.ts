@@ -279,7 +279,7 @@ async function main() {
 
   // Copy to dev content directory for simulator use
   const zipPath = path.join(ROOT, 'assets', 'packs', `${PACK_ID}.zip`);
-  const hashPath = path.join(ROOT, 'assets', 'packs', `${PACK_ID}.sha256`);
+  const hashPath = path.join(ROOT, 'assets', 'packs', `${PACK_ID}-hash.sha256`);
   console.log(`[mock-pack] Creating zip at ${zipPath}`);
   await zipDirectory(TEMP_DIR, zipPath, PACK_ID);
   writeSha256(zipPath, hashPath);

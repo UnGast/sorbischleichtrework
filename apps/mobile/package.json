@@ -25,7 +25,17 @@
     "build:mock-pack": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/build-mock-pack.ts",
     "copy:pack": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/copy-pack-assets.ts",
     "build:legacy-pack:de_hsb": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/convert-legacy-content.ts ../../old/main_deutsch_obersorbisch/assets ../../converted-packs de-hsb-pack \"DE_HSB Pack\" 1.0.0",
-    "build:legacy-pack:de_dsb": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/convert-legacy-content.ts ../../old/main_deutsch_niedersorbisch/assets ../../converted-packs de-dsb-pack \"DE_DSB Pack\" 1.0.0"
+    "build:legacy-pack:de_dsb": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/convert-legacy-content.ts ../../old/main_deutsch_niedersorbisch/assets ../../converted-packs de-dsb-pack \"DE_DSB Pack\" 1.0.0",
+    "postinstall": "patch-package",
+    "build:ios:testflight": "eas build --platform ios --profile testflight",
+    "build:android:internal": "eas build --platform android --profile android-internal",
+    "build:all:test": "eas build --platform all --profile testflight,android-internal",
+    "build:ios:local": "eas build --platform ios --profile local-ios --local",
+    "build:android:local": "eas build --platform android --profile local-android --local",
+    "build:ios:native": "cd ios && xcodebuild -workspace Sorbischleicht.xcworkspace -scheme Sorbischleicht -configuration Release archive -archivePath build/Sorbischleicht.xcarchive && cd ..",
+    "build:android:native": "cd android && ./gradlew bundleRelease && cd ..",
+    "submit:ios": "eas submit --platform ios",
+    "submit:android": "eas submit --platform android"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -93,6 +103,8 @@
     "eslint-import-resolver-typescript": "^4.4.4",
     "jest": "^29.7.0",
     "metro-resolver": "^0.80.9",
+    "patch-package": "^8.0.1",
+    "postinstall-postinstall": "^2.1.0",
     "react-test-renderer": "19.1.0",
     "rimraf": "^5.0.7",
     "ts-node": "^10.9.2",

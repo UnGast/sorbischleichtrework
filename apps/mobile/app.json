@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sorbisch leicht",
     "slug": "sorbisch-leicht",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "sorbischleicht",
     "icon": "./assets/images/icon.png",
@@ -13,7 +13,7 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.sorbischleicht.app",
+      "package": "de.witaj.sorbischesprache.base",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
@@ -40,6 +40,12 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": false
         }
       ],
       "expo-secure-store",

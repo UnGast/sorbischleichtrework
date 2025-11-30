@@ -1,0 +1,82 @@
+{
+  "cli": {
+    "version": ">= 13.2.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "ios": {
+        "bundleIdentifier": "com.sorbischleicht.app"
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "applicationId": "de.witaj.sorbischesprache.base"
+      }
+    },
+    "testflight": {
+      "extends": "production",
+      "distribution": "store",
+      "ios": {
+        "simulator": false,
+        "bundleIdentifier": "com.sorbischleicht.app"
+      }
+    },
+    "android-internal": {
+      "extends": "production",
+      "distribution": "store",
+      "android": {
+        "buildType": "app-bundle",
+        "applicationId": "de.witaj.sorbischesprache.base"
+      }
+    },
+    "local-ios": {
+      "extends": "testflight",
+      "distribution": "store",
+      "ios": {
+        "simulator": false,
+        "bundleIdentifier": "com.sorbischleicht.app"
+      }
+    },
+    "local-android": {
+      "extends": "android-internal",
+      "distribution": "store",
+      "android": {
+        "buildType": "app-bundle",
+        "applicationId": "de.witaj.sorbischesprache.base"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "your-apple-id@example.com",
+        "ascAppId": "your-app-store-connect-app-id",
+        "appleTeamId": "your-apple-team-id"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./path/to/api-key.json",
+        "track": "internal"
+      }
+    }
+  }
+}
+

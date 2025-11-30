@@ -254,7 +254,7 @@ export async function buildContentPack(options: ConvertOptions) {
   console.log(`[convert] Wrote zip to ${zipPath}`);
 
   const hash = await computeFileHash(zipPath);
-  const hashPath = path.join(outputDir, `${packId}.sha256`);
+  const hashPath = path.join(outputDir, `${packId}-hash.sha256`);
   fs.writeFileSync(hashPath, `${hash}\n`, 'utf-8');
   console.log(`[convert] Wrote hash to ${hashPath}`);
 

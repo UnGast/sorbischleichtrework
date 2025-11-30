@@ -4,11 +4,11 @@ export const MAIN_PACK_ID = 'de-hsb-pack';
 export const PACK_ASSETS = {
   main: {
     archive: require('../../assets/packs/de-hsb-pack.zip'),
-    hash: require('../../assets/packs/de-hsb-pack.sha256'),
+    hash: require('../../assets/packs/de-hsb-pack-hash.sha256'),
   },
   devMock: {
     archive: require('../../assets/packs/mock-pack.zip'),
-    hash: require('../../assets/packs/mock-pack.sha256'),
+    hash: require('../../assets/packs/mock-pack-hash.sha256'),
   },
 };
 export const MAIN_PACK_ARCHIVE = PACK_ASSETS.main.archive;
