@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { parseStringPromise } from 'xml2js';
 
 export interface LegacyPhraseTopic {
@@ -134,21 +135,27 @@ function normalizeWhitespace(value?: string | null): string {
     .replace(/\u00A0/g, ' ');
 }
 
-function buildPhraseId(topicIndex: number, orderIndex: number): string {
-  return `phr-${String(topicIndex).padStart(2, '0')}-${String(orderIndex).padStart(2, '0')}`;
+function createStableId(parts: string[]): string {
+  const hash = createHash('sha256');
+  parts.forEach((part) => hash.update(part));
+  return hash.digest('hex').substring(0, 16);
 }
 
-function buildTopicId(topicIndex: number, type: TopicRecord['type']): string {
-  const prefix = type === 'phrases' ? 'phrases' : type === 'vocabulary' ? 'vocab' : 'hundred';
-  return `${prefix}-${String(topicIndex).padStart(2, '0')}`;
+function buildPhraseId(topicId: string, german: string, sorbian: string, index: number): string {
+  // Include index to disambiguate duplicates within the same topic/text (e.g. separators)
+  return createStableId(['phrase', topicId, german, sorbian, index.toString()]);
 }
 
-function buildVocabId(topicIndex: number, orderIndex: number): string {
-  return `voc-${String(topicIndex).padStart(2, '0')}-${String(orderIndex).padStart(2, '0')}`;
+function buildTopicId(type: TopicRecord['type'], nameGerman: string): string {
+  return createStableId(['topic', type, nameGerman]);
 }
 
-function buildHundredId(orderIndex: number): string {
-  return `hund-${String(orderIndex).padStart(2, '0')}`;
+function buildVocabId(topicId: string, german: string, sorbian: string): string {
+  return createStableId(['vocab', topicId, german, sorbian]);
+}
+
+function buildHundredId(name: string): string {
+  return createStableId(['hundred', name]);
 }
 
 function deriveTopicType(filePath: string, defaultType: TopicRecord['type']): TopicRecord['type'] {
@@ -265,22 +272,26 @@ async function convertPhraseTopic(
   audioRoot: string,
 ): Promise<{ topic: TopicRecord; phrases: PhraseItemRecord[] }> {
   const legacy = await readPhraseTopicFile(topicPath);
-  const topicId = buildTopicId(topicIndex, 'phrases');
   const topicNode = legacy.topic;
   const topicLabel = normalizeWhitespace(topicNode.topicNameGerman?.[0] ?? topicNode.$?.nameGerman ?? `Phrases ${topicIndex}`);
   const topicSorbian = normalizeWhitespace(topicNode.topicNameSorbian?.[0] ?? topicNode.$?.nameSorbian ?? '');
   const topicAudioSorbian = normalizeWhitespace(topicNode.topicSoundSorbian?.[0] ?? topicNode.$?.soundSorbian ?? '');
+  const topicType = deriveTopicType(topicPath, 'phrases');
+  const topicId = buildTopicId(topicType, topicLabel);
 
   const phrases = topicNode.phrases?.[0]?.phrase ?? [];
   const converted: PhraseItemRecord[] = [];
   for (let index = 0; index < phrases.length; index += 1) {
     const phraseNode = phrases[index];
+    const germanText = normalizeWhitespace(phraseNode.germanText?.[0] ?? '');
+    const sorbianText = normalizeWhitespace(phraseNode.sorbianText?.[0] ?? '');
+
     const base: PhraseItemRecord = {
-      id: buildPhraseId(topicIndex, index + 1),
+      id: buildPhraseId(topicId, germanText, sorbianText, index),
       topicId,
       order: index + 1,
-      germanText: normalizeWhitespace(phraseNode.germanText?.[0] ?? ''),
-      sorbianText: normalizeWhitespace(phraseNode.sorbianText?.[0] ?? ''),
+      germanText,
+      sorbianText,
     };
 
     const typeAttr = phraseNode.$?.type;
@@ -316,7 +327,7 @@ async function convertPhraseTopic(
 
   const topic: TopicRecord = {
     id: topicId,
-    type: deriveTopicType(topicPath, 'phrases'),
+    type: topicType,
     nameGerman: topicLabel,
     nameSorbian: topicSorbian,
     order: topicIndex,
@@ -338,22 +349,26 @@ async function convertVocabTopic(
 ): Promise<{ topic: TopicRecord; vocabulary: VocabItemRecord[] }> {
   const legacy = await readVocabTopicFile(topicPath);
   const topicNode = legacy.topic;
-  const topicId = buildTopicId(topicIndex, 'vocabulary');
   const germanName = normalizeWhitespace(topicNode.$.nameGerman);
   const sorbianName = normalizeWhitespace(topicNode.$.nameSorbian ?? '');
   const sorbianAudio = normalizeWhitespace(topicNode.$.soundSorbian ?? '');
   const icon = normalizeWhitespace(topicNode.$.icon ?? '');
+  const topicType = deriveTopicType(topicPath, 'vocabulary');
+  const topicId = buildTopicId(topicType, germanName);
 
   const items = topicNode.vocabulary?.[0]?.vocable ?? [];
   const vocabulary: VocabItemRecord[] = [];
   for (let index = 0; index < items.length; index += 1) {
     const entry = items[index].$;
+    const textGerman = normalizeWhitespace(entry.textGerman);
+    const textSorbian = normalizeWhitespace(entry.textSorbian);
+
     const vocab: VocabItemRecord = {
-      id: buildVocabId(topicIndex, index + 1),
+      id: buildVocabId(topicId, textGerman, textSorbian),
       topicId,
       order: index + 1,
-      textGerman: normalizeWhitespace(entry.textGerman),
-      textSorbian: normalizeWhitespace(entry.textSorbian),
+      textGerman,
+      textSorbian,
     };
 
     if (entry.soundSorbian) {
@@ -384,7 +399,7 @@ async function convertVocabTopic(
 
   const topic: TopicRecord = {
     id: topicId,
-    type: deriveTopicType(topicPath, 'vocabulary'),
+    type: topicType,
     nameGerman: germanName,
     nameSorbian: sorbianName,
     order: topicIndex,
@@ -420,7 +435,7 @@ async function convertHundredSeconds(
     const image = normalizeWhitespace(item.image?.[0] ?? '');
 
     const record: HundredSecRecord = {
-      id: buildHundredId(index + 1),
+      id: buildHundredId(name),
       order: index + 1,
       name,
       audio: audio ? `${audio}.mp3` : '',
