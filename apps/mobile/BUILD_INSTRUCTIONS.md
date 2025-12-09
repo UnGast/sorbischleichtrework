@@ -4,6 +4,38 @@ This guide will help you build test versions of the app for Apple App Store (Tes
 
 **⚠️ IMPORTANT**: Before building for release, you need to set up certificates and signing keys. See [CERTIFICATES_SETUP.md](./CERTIFICATES_SETUP.md) for detailed instructions.
 
+## Content Packs & Multi-App Builds
+
+Each binary must contain exactly one content pack. Use the helper scripts below to swap packs before running a build or to trigger a full build matrix in one go.
+
+### Checking available packs
+
+```bash
+cd apps/mobile
+npm run pack:select -- --list
+```
+
+### Selecting a pack for local development or a single build
+
+```bash
+# Example: activate the Lower Sorbian pack
+npm run pack:select -- de-dsb-pack
+```
+
+This command copies the matching archive/hash into `assets/packs/active-pack.*` and updates `pack-selection.json`, so the mobile app only bundles the requested pack.
+
+### Building every pack (iOS + Android) sequentially
+
+```bash
+cd apps/mobile
+npm run build:packs
+```
+
+- Builds run pack-by-pack (default order defined in `scripts/contentPacks.ts`)
+- Both TestFlight (`ios:testflight`) and Android Internal (`android:android-internal`) builds are triggered for every pack
+- Use `npm run build:packs -- --packs=de-dsb-pack --platforms=android` to target a subset
+- The script automatically resets the active pack to the default after finishing or on failure
+
 ## Build Options: Cloud vs Local
 
 You have **three options** for building:

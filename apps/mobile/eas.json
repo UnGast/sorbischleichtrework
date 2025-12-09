@@ -29,7 +29,7 @@
       },
       "android": {
         "buildType": "app-bundle",
-        "applicationId": "de.witaj.sorbischesprache.base"
+        "applicationId": "de.witaj.sorbischesprache.beta"
       }
     },
     "testflight": {
@@ -45,7 +45,7 @@
       "distribution": "store",
       "android": {
         "buildType": "app-bundle",
-        "applicationId": "de.witaj.sorbischesprache.base"
+        "applicationId": "de.witaj.sorbischesprache.beta"
       }
     },
     "local-ios": {
@@ -61,7 +61,7 @@
       "distribution": "store",
       "android": {
         "buildType": "app-bundle",
-        "applicationId": "de.witaj.sorbischesprache.base"
+        "applicationId": "de.witaj.sorbischesprache.beta"
       }
     }
   },

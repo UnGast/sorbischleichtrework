@@ -23,6 +23,7 @@ interface TopicRow {
 interface VocabularyRow {
   id: string;
   topic_id: string;
+  ord: number;
   de: string;
   sb: string;
   img?: string | null;
@@ -34,6 +35,7 @@ interface VocabularyRow {
 interface PhraseRow {
   id: string;
   topic_id: string;
+  ord: number;
   de: string;
   sb: string;
   audio_de?: string | null;
@@ -43,6 +45,7 @@ interface PhraseRow {
 
 interface HundredRow {
   id: string;
+  ord: number;
   name: string;
   audio: string;
   image?: string | null;
@@ -70,15 +73,15 @@ export async function loadPackContentFromDb(dbUri: string): Promise<SqlitePackCo
     console.log('[sqlitePackLoader] Loaded topics', { count: topicRows.length });
 
     const vocabRows = await db.getAllAsync<VocabularyRow>(
-      'SELECT id, topic_id, de, sb, img, audio, ignore_assign, ignore_write FROM vocabulary ORDER BY topic_id, id',
+      'SELECT id, topic_id, ord, de, sb, img, audio, ignore_assign, ignore_write FROM vocabulary ORDER BY topic_id, ord',
     );
 
     const phraseRows = await db.getAllAsync<PhraseRow>(
-      'SELECT id, topic_id, de, sb, audio_de, audio_sb, item_type FROM phrases ORDER BY topic_id, id',
+      'SELECT id, topic_id, ord, de, sb, audio_de, audio_sb, item_type FROM phrases ORDER BY topic_id, ord',
     );
 
     const hundredRows = await db.getAllAsync<HundredRow>(
-      'SELECT id, name, audio, image FROM hundred_seconds ORDER BY id',
+      'SELECT id, ord, name, audio, image FROM hundred_seconds ORDER BY ord',
     );
 
     const topics: Topic[] = topicRows.map((row) => ({
@@ -95,6 +98,7 @@ export async function loadPackContentFromDb(dbUri: string): Promise<SqlitePackCo
       list.push({
         id: row.id,
         topicId: row.topic_id,
+        order: row.ord,
         textGerman: row.de,
         textSorbian: row.sb,
         img: row.img ?? undefined,
@@ -110,6 +114,7 @@ export async function loadPackContentFromDb(dbUri: string): Promise<SqlitePackCo
       list.push({
         id: row.id,
         topicId: row.topic_id,
+        order: row.ord,
         germanText: row.de,
         sorbianText: row.sb,
         germanAudio: row.audio_de ?? undefined,
@@ -120,6 +125,7 @@ export async function loadPackContentFromDb(dbUri: string): Promise<SqlitePackCo
 
     const hundredSeconds: HundredSecItem[] = hundredRows.map((row) => ({
       id: row.id,
+      order: row.ord,
       name: row.name,
       audio: row.audio,
       image: row.image ?? undefined,

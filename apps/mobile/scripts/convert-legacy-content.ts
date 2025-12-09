@@ -55,6 +55,7 @@ function createDatabase(dbPath: string, data: LegacyConversionResult) {
       CREATE TABLE IF NOT EXISTS vocabulary (
         id TEXT PRIMARY KEY,
         topic_id TEXT NOT NULL REFERENCES topics(id),
+        ord INTEGER NOT NULL,
         de TEXT NOT NULL,
         sb TEXT NOT NULL,
         img TEXT,
@@ -66,6 +67,7 @@ function createDatabase(dbPath: string, data: LegacyConversionResult) {
       CREATE TABLE IF NOT EXISTS phrases (
         id TEXT PRIMARY KEY,
         topic_id TEXT NOT NULL REFERENCES topics(id),
+        ord INTEGER NOT NULL,
         de TEXT NOT NULL,
         sb TEXT NOT NULL,
         audio_de TEXT,
@@ -76,6 +78,7 @@ function createDatabase(dbPath: string, data: LegacyConversionResult) {
 
       CREATE TABLE IF NOT EXISTS hundred_seconds (
         id TEXT PRIMARY KEY,
+        ord INTEGER NOT NULL,
         name TEXT NOT NULL,
         audio TEXT NOT NULL,
         image TEXT
@@ -93,16 +96,16 @@ function createDatabase(dbPath: string, data: LegacyConversionResult) {
        VALUES (@id, @type, @nameGerman, @nameSorbian, @icon, @audioIntroSorbian, @order)`,
     );
     const insertVocab = db.prepare(
-      `INSERT INTO vocabulary (id, topic_id, de, sb, img, audio, ignore_assign, ignore_write)
-       VALUES (@id, @topicId, @textGerman, @textSorbian, @img, @audioSorbian, @ignoreAssign, @ignoreWrite)`,
+      `INSERT INTO vocabulary (id, topic_id, ord, de, sb, img, audio, ignore_assign, ignore_write)
+       VALUES (@id, @topicId, @order, @textGerman, @textSorbian, @img, @audioSorbian, @ignoreAssign, @ignoreWrite)`,
     );
     const insertPhrase = db.prepare(
-      `INSERT INTO phrases (id, topic_id, de, sb, audio_de, audio_sb, item_type, info_text)
-       VALUES (@id, @topicId, @germanText, @sorbianText, @germanAudio, @sorbianAudio, @type, @infoText)`,
+      `INSERT INTO phrases (id, topic_id, ord, de, sb, audio_de, audio_sb, item_type, info_text)
+       VALUES (@id, @topicId, @order, @germanText, @sorbianText, @germanAudio, @sorbianAudio, @type, @infoText)`,
     );
     const insertHundred = db.prepare(
-      `INSERT INTO hundred_seconds (id, name, audio, image)
-       VALUES (@id, @name, @audio, @image)`,
+      `INSERT INTO hundred_seconds (id, ord, name, audio, image)
+       VALUES (@id, @order, @name, @audio, @image)`,
     );
     const insertAsset = db.prepare(
       `INSERT INTO assets (logical_name, relative_path, bytes) VALUES (@logicalName, @relativePath, @bytes)`);
@@ -125,6 +128,7 @@ function createDatabase(dbPath: string, data: LegacyConversionResult) {
           insertVocab.run({
             id: item.id,
             topicId: item.topicId,
+            order: item.order,
             textGerman: item.textGerman,
             textSorbian: item.textSorbian,
             img: item.img ?? null,
@@ -140,6 +144,7 @@ function createDatabase(dbPath: string, data: LegacyConversionResult) {
           insertPhrase.run({
             id: item.id,
             topicId: item.topicId,
+            order: item.order,
             germanText: item.germanText,
             sorbianText: item.sorbianText,
             germanAudio: item.germanAudio ?? null,
@@ -153,6 +158,7 @@ function createDatabase(dbPath: string, data: LegacyConversionResult) {
       data.hundredSeconds.forEach((item) => {
         insertHundred.run({
           id: item.id,
+          order: item.order,
           name: item.name,
           audio: item.audio,
           image: item.image ?? null,

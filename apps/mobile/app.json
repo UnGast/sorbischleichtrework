@@ -2,18 +2,20 @@
   "expo": {
     "name": "Sorbisch leicht",
     "slug": "sorbisch-leicht",
-    "version": "1.0.0",
+    "version": "4.0.0",
     "orientation": "portrait",
     "scheme": "sorbischleicht",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "bundleIdentifier": "com.sorbischleicht.app",
-      "supportsTablet": true
+      "bundleIdentifier": "com.witaj.sorbischleicht.obersorbisch",
+      "supportsTablet": true,
+      "buildNumber": "11"
     },
     "android": {
-      "package": "de.witaj.sorbischesprache.base",
+      "package": "de.witaj.sorbischesprache.beta",
+      "versionCode": 11,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",

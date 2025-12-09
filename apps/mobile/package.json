@@ -26,14 +26,17 @@
     "copy:pack": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/copy-pack-assets.ts",
     "build:legacy-pack:de_hsb": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/convert-legacy-content.ts ../../old/main_deutsch_obersorbisch/assets ../../converted-packs de-hsb-pack \"DE_HSB Pack\" 1.0.0",
     "build:legacy-pack:de_dsb": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/convert-legacy-content.ts ../../old/main_deutsch_niedersorbisch/assets ../../converted-packs de-dsb-pack \"DE_DSB Pack\" 1.0.0",
+    "build:legacy-pack:en_hsb": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/convert-legacy-content.ts ../../old/ios_englisch_obersorbisch ../../converted-packs ios-english-pack \"English Upper Sorbian\" 1.0.0-ios",
     "postinstall": "patch-package",
     "build:ios:testflight": "eas build --platform ios --profile testflight",
     "build:android:internal": "eas build --platform android --profile android-internal",
     "build:all:test": "eas build --platform all --profile testflight,android-internal",
     "build:ios:local": "eas build --platform ios --profile local-ios --local",
     "build:android:local": "eas build --platform android --profile local-android --local",
-    "build:ios:native": "cd ios && xcodebuild -workspace Sorbischleicht.xcworkspace -scheme Sorbischleicht -configuration Release archive -archivePath build/Sorbischleicht.xcarchive && cd ..",
+    "build:ios:native": "cd ios && xcodebuild -workspace Sorbischleicht.xcworkspace -scheme Sorbischleicht -configuration Release -destination 'generic/platform=iOS' archive -archivePath build/Sorbischleicht.xcarchive -allowProvisioningUpdates && cd ..",
     "build:android:native": "cd android && ./gradlew bundleRelease && cd ..",
+    "pack:select": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/set-active-pack.ts",
+    "build:packs": "ts-node -r tsconfig-paths/register --project tsconfig.scripts.json scripts/build-all-packs.ts",
     "submit:ios": "eas submit --platform ios",
     "submit:android": "eas submit --platform android"
   },
@@ -81,6 +84,7 @@
   },
   "expo": {
     "assetBundlePatterns": [
+      "assets/packs/active-pack.zip",
       "assets/packs/mock-pack.zip"
     ]
   },

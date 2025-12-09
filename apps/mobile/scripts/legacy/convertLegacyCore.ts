@@ -31,6 +31,30 @@ export interface LegacyPhraseTopic {
   };
 }
 
+interface LegacyIosTopic {
+  topic: {
+    $?: {
+      nameEnglish?: string;
+    };
+    topicNameEnglish?: string[];
+    topicNameSorbian?: string[];
+    topicSoundEnglish?: string[];
+    topicSoundSorbian?: string[];
+    phrases?: {
+      phrase: {
+        $?: {
+          type?: string;
+        };
+        englishText?: string[];
+        sorbianText?: string[];
+        englishSound?: string[];
+        sorbianSound?: string[];
+        infoText?: string[];
+      }[];
+    }[];
+  };
+}
+
 interface LegacyHundredSeconds {
   inHundredSeconds: {
     item: {
@@ -184,6 +208,11 @@ async function readHundredSecondsFile(filePath: string): Promise<LegacyHundredSe
   return parseStringPromise(xml, { explicitArray: true });
 }
 
+async function readIosTopicFile(filePath: string): Promise<LegacyIosTopic> {
+  const xml = await fs.readFile(filePath, 'utf-8');
+  return parseStringPromise(xml, { explicitArray: true, attrkey: '$' });
+}
+
 function determineRelativePath(logicalName: string): string {
   const normalized = logicalName.replace(/\\/g, '/').replace(/^\/+/, '');
   const lower = normalized.toLowerCase();
@@ -263,6 +292,52 @@ async function collectAsset(
     console.warn(`[convert] Failed to process asset ${logicalName} from ${sourcePath}:`, error);
     return undefined;
   }
+}
+
+async function directoryExists(dirPath: string): Promise<boolean> {
+  try {
+    const stats = await fs.stat(dirPath);
+    return stats.isDirectory();
+  } catch (err) {
+    const error = err as NodeJS.ErrnoException;
+    if (error.code === 'ENOENT') {
+      return false;
+    }
+    throw error;
+  }
+}
+
+function ensureMp3Extension(name: string): string {
+  if (name.toLowerCase().endsWith('.mp3')) {
+    return name;
+  }
+  return `${name}.mp3`;
+}
+
+async function resolveAudioAsset(
+  manifest: AssetManifest,
+  audioId: string | undefined,
+  audioRoot: string,
+): Promise<string | undefined> {
+  const normalized = normalizeWhitespace(audioId ?? '');
+  if (!normalized) {
+    return undefined;
+  }
+  const logicalName = `audio/${ensureMp3Extension(normalized)}`;
+  const asset = await collectAsset(manifest, logicalName, audioRoot);
+  return asset?.relativePath;
+}
+
+function compareTopicFilenames(a: string, b: string): number {
+  const extractNumber = (value: string): number => {
+    const match = value.match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : Number.MAX_SAFE_INTEGER;
+  };
+  const diff = extractNumber(a) - extractNumber(b);
+  if (diff !== 0) {
+    return diff;
+  }
+  return a.localeCompare(b);
 }
 
 async function convertPhraseTopic(
@@ -484,6 +559,19 @@ async function convertHundredSeconds(
 }
 
 export async function convertLegacyContent(baseDir: string): Promise<LegacyConversionResult> {
+  if (await directoryExists(path.join(baseDir, 'phrases'))) {
+    return convertAndroidLegacy(baseDir);
+  }
+
+  const iosTopicFiles = await discoverIosTopicFiles(baseDir);
+  if (iosTopicFiles.length > 0) {
+    return convertIosEnglishSorbian(baseDir, iosTopicFiles);
+  }
+
+  throw new Error(`[convert] Unsupported legacy content layout at ${baseDir}`);
+}
+
+async function convertAndroidLegacy(baseDir: string): Promise<LegacyConversionResult> {
   const phrasesDir = path.join(baseDir, 'phrases');
   const vocabDir = path.join(baseDir, 'vocabulary');
   const hundredFile = path.join(baseDir, 'in_hundred_seconds.xml');
@@ -494,8 +582,10 @@ export async function convertLegacyContent(baseDir: string): Promise<LegacyConve
 
   const manifest: AssetManifest = { files: {} };
 
-  const phraseTopicFiles = (await fs.readdir(phrasesDir)).filter((file) => file.endsWith('.xml')).sort();
-  const vocabTopicFiles = (await fs.readdir(vocabDir)).filter((file) => file.endsWith('.xml')).sort();
+  const phraseTopicFiles = (await fs.readdir(phrasesDir)).filter((file) => file.endsWith('.xml'));
+  phraseTopicFiles.sort(compareTopicFilenames);
+  const vocabTopicFiles = (await fs.readdir(vocabDir)).filter((file) => file.endsWith('.xml'));
+  vocabTopicFiles.sort(compareTopicFilenames);
 
   const topics: TopicRecord[] = [];
   const phrasesByTopic: Record<string, PhraseItemRecord[]> = {};
@@ -556,4 +646,107 @@ export async function convertLegacyContent(baseDir: string): Promise<LegacyConve
     hundredSeconds: hundredSecondsRecords,
     assets: manifest,
   };
+}
+
+async function discoverIosTopicFiles(baseDir: string): Promise<string[]> {
+  let entries: string[] = [];
+  try {
+    entries = await fs.readdir(baseDir);
+  } catch (err) {
+    const error = err as NodeJS.ErrnoException;
+    if (error.code === 'ENOENT') {
+      return [];
+    }
+    throw error;
+  }
+  return entries.filter((file) => /^topic\d+\.xml$/i.test(file));
+}
+
+async function convertIosEnglishSorbian(baseDir: string, topicFiles: string[]): Promise<LegacyConversionResult> {
+  const manifest: AssetManifest = { files: {} };
+  const sortedTopics = [...topicFiles].sort(compareTopicFilenames);
+  const topics: TopicRecord[] = [];
+  const phrasesByTopic: Record<string, PhraseItemRecord[]> = {};
+
+  for (let index = 0; index < sortedTopics.length; index += 1) {
+    const fileName = sortedTopics[index];
+    const { topic, phrases } = await convertIosTopic(path.join(baseDir, fileName), index + 1, manifest, baseDir);
+    topics.push(topic);
+    phrasesByTopic[topic.id] = phrases;
+  }
+
+  return {
+    topics,
+    vocabularyByTopic: {},
+    phrasesByTopic,
+    hundredSeconds: [],
+    assets: manifest,
+  };
+}
+
+async function convertIosTopic(
+  topicPath: string,
+  topicIndex: number,
+  manifest: AssetManifest,
+  audioRoot: string,
+): Promise<{ topic: TopicRecord; phrases: PhraseItemRecord[] }> {
+  const legacy = await readIosTopicFile(topicPath);
+  const topicNode = legacy.topic;
+  const topicLabel = normalizeWhitespace(
+    topicNode.topicNameEnglish?.[0] ?? topicNode.$?.nameEnglish ?? `Topic ${topicIndex}`,
+  );
+  const topicSorbian = normalizeWhitespace(topicNode.topicNameSorbian?.[0] ?? '');
+  const topicId = buildTopicId('phrases', topicLabel || `Topic ${topicIndex}`);
+
+  const phraseNodes = topicNode.phrases?.[0]?.phrase ?? [];
+  const phrases: PhraseItemRecord[] = [];
+  for (let index = 0; index < phraseNodes.length; index += 1) {
+    const phraseNode = phraseNodes[index];
+    const englishText = normalizeWhitespace(phraseNode.englishText?.[0] ?? '');
+    const sorbianText = normalizeWhitespace(phraseNode.sorbianText?.[0] ?? '');
+
+    const record: PhraseItemRecord = {
+      id: buildPhraseId(topicId, englishText, sorbianText, index),
+      topicId,
+      order: index + 1,
+      germanText: englishText,
+      sorbianText,
+    };
+
+    const typeAttr = phraseNode.$?.type;
+    if (typeAttr && (typeAttr === 'separator' || typeAttr === 'normal')) {
+      record.type = typeAttr;
+    }
+
+    const englishAudio = await resolveAudioAsset(manifest, phraseNode.englishSound?.[0], audioRoot);
+    if (englishAudio) {
+      record.germanAudio = englishAudio;
+    }
+    const sorbianAudio = await resolveAudioAsset(manifest, phraseNode.sorbianSound?.[0], audioRoot);
+    if (sorbianAudio) {
+      record.sorbianAudio = sorbianAudio;
+    }
+
+    const infoText = normalizeWhitespace(phraseNode.infoText?.[0]);
+    if (infoText) {
+      record.infoText = infoText;
+    }
+
+    phrases.push(record);
+  }
+
+  const topic: TopicRecord = {
+    id: topicId,
+    type: 'phrases',
+    nameGerman: topicLabel,
+    nameSorbian: topicSorbian,
+    order: topicIndex,
+  };
+
+  const sorbianIntro = await resolveAudioAsset(manifest, topicNode.topicSoundSorbian?.[0], audioRoot);
+  if (sorbianIntro) {
+    topic.audioIntroSorbian = sorbianIntro;
+  }
+
+  return { topic, phrases };
 }

@@ -13,6 +13,7 @@ export interface Topic {
 export interface VocabItem {
   id: string;
   topicId: string;
+  order: number;
   textGerman: string;
   textSorbian: string;
   img?: string;
@@ -24,6 +25,7 @@ export interface VocabItem {
 export interface PhraseItem {
   id: string;
   topicId: string;
+  order: number;
   germanText: string;
   sorbianText: string;
   germanAudio?: string;
@@ -34,6 +36,7 @@ export interface PhraseItem {
 
 export interface HundredSecItem {
   id: string;
+  order: number;
   name: string;
   audio: string;
   image?: string;
