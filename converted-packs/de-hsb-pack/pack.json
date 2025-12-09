@@ -1,0 +1,12 @@
+{
+  "packId": "de-hsb-pack",
+  "displayName": "DE_HSB Pack",
+  "contentVersion": "1.0.0",
+  "modules": {
+    "vocabulary": true,
+    "phrases": true,
+    "hundredSeconds": true
+  },
+  "contentFile": "content.db",
+  "primaryColor": "#A91A36"
+}

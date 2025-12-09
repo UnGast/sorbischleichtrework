@@ -1,0 +1,12 @@
+{
+  "packId": "ios-english-pack",
+  "displayName": "English Upper Sorbian",
+  "contentVersion": "1.0.0-ios",
+  "modules": {
+    "vocabulary": true,
+    "phrases": true,
+    "hundredSeconds": true
+  },
+  "contentFile": "content.db",
+  "primaryColor": "#A91A36"
+}
