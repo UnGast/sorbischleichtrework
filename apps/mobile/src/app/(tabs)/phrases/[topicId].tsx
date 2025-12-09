@@ -14,7 +14,7 @@ export default function PhraseTopicRoute() {
   const { topicId } = useLocalSearchParams<{ topicId: string }>();
   const phrases = usePhrasesForTopic(topicId ?? '');
   const topic = useTopicById(topicId ?? '');
-  const { playTrack, setQueueWithAutoMode, togglePlay, isPlaying, currentItemId } = useAudioPlayback();
+  const { playTrack, setQueueWithAutoMode, stopPlayback, currentItemId } = useAudioPlayback();
   const primaryLanguage = useAppSelector((state) => state.settings.phrasesPrimaryLanguage);
   const dispatch = useAppDispatch();
   const [autoMode, setAutoMode] = useState(false);
@@ -150,7 +150,7 @@ export default function PhraseTopicRoute() {
     console.log('Starting auto mode for phrase topic');
   }, [activePackId, data, dispatch, primaryLanguage, setQueueWithAutoMode, topicId]);
 
-  const stopAutoMode = useCallback(() => {
+  const stopAutoMode = useCallback(async () => {
     if (!topicId) {
       return;
     }
@@ -167,10 +167,9 @@ export default function PhraseTopicRoute() {
         }),
       );
     }
-    if (isPlaying) {
-      togglePlay();
-    }
-  }, [activePackId, dispatch, isPlaying, togglePlay, topicId]);
+    // Stop playback and clear highlight
+    await stopPlayback();
+  }, [activePackId, dispatch, stopPlayback, topicId]);
 
   if (data.length === 0) {
     return (
