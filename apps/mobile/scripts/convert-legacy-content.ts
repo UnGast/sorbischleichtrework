@@ -45,6 +45,7 @@ function createDatabase(dbPath: string, data: LegacyConversionResult) {
       CREATE TABLE IF NOT EXISTS topics (
         id TEXT PRIMARY KEY,
         type TEXT NOT NULL,
+        topic_kind TEXT NOT NULL DEFAULT 'normal',
         name_german TEXT NOT NULL,
         name_sorbian TEXT NOT NULL,
         icon TEXT,
@@ -92,8 +93,8 @@ function createDatabase(dbPath: string, data: LegacyConversionResult) {
     `);
 
     const insertTopic = db.prepare(
-      `INSERT INTO topics (id, type, name_german, name_sorbian, icon, audio_intro_sorbian, ord)
-       VALUES (@id, @type, @nameGerman, @nameSorbian, @icon, @audioIntroSorbian, @order)`,
+      `INSERT INTO topics (id, type, topic_kind, name_german, name_sorbian, icon, audio_intro_sorbian, ord)
+       VALUES (@id, @type, @topicKind, @nameGerman, @nameSorbian, @icon, @audioIntroSorbian, @order)`,
     );
     const insertVocab = db.prepare(
       `INSERT INTO vocabulary (id, topic_id, ord, de, sb, img, audio, ignore_assign, ignore_write)
@@ -115,6 +116,7 @@ function createDatabase(dbPath: string, data: LegacyConversionResult) {
         insertTopic.run({
           id: topic.id,
           type: topic.type,
+          topicKind: topic.kind ?? 'normal',
           nameGerman: topic.nameGerman,
           nameSorbian: topic.nameSorbian,
           icon: topic.icon ? topic.icon : null,

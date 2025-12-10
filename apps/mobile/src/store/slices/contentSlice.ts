@@ -29,6 +29,10 @@ function sortTopics(topics: Topic[]) {
   return [...topics].sort((a, b) => a.order - b.order);
 }
 
+function sortHundredSeconds(items: HundredSecItem[]) {
+  return [...items].sort((a, b) => a.order - b.order);
+}
+
 const contentSlice = createSlice({
   name: 'content',
   initialState,
@@ -63,7 +67,7 @@ const contentSlice = createSlice({
       state.phrasesByTopic[topicId] = items;
     },
     setHundredSeconds(state, action: PayloadAction<HundredSecItem[]>) {
-      state.hundredSeconds = action.payload;
+      state.hundredSeconds = sortHundredSeconds(action.payload);
     },
     setModuleAvailability(state, action: PayloadAction<Partial<ModuleAvailability>>) {
       state.modules = { ...state.modules, ...action.payload };

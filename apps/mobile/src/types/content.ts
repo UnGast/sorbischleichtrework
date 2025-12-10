@@ -1,8 +1,10 @@
 export type TopicType = 'vocabulary' | 'phrases' | 'hundredSeconds';
+export type TopicKind = 'normal' | 'alphabet';
 
 export interface Topic {
   id: string;
   type: TopicType;
+  kind: TopicKind;
   nameGerman: string;
   nameSorbian: string;
   icon?: string;

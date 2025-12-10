@@ -4,6 +4,7 @@ export const mockTopics: Topic[] = [
   {
     id: 'vocab-01',
     type: 'vocabulary',
+    kind: 'normal',
     nameGerman: 'Begrüßung und Verabschiedung',
     nameSorbian: 'Postrowjenje a rozžohnowanje',
     icon: 'lektion1.png',
@@ -12,6 +13,7 @@ export const mockTopics: Topic[] = [
   {
     id: 'phrases-01',
     type: 'phrases',
+    kind: 'normal',
     nameGerman: 'Alltagssätze',
     nameSorbian: 'Wšědne sady',
     order: 2,
@@ -19,6 +21,7 @@ export const mockTopics: Topic[] = [
   {
     id: 'hundred-01',
     type: 'hundredSeconds',
+    kind: 'normal',
     nameGerman: 'Sorbisch in 100 Sekunden',
     nameSorbian: 'Serbsce za 100 sekundow',
     order: 3,
@@ -30,6 +33,7 @@ export const mockVocabulary: Record<string, VocabItem[]> = {
     {
       id: 'voc-01-01',
       topicId: 'vocab-01',
+      order: 1,
       textGerman: 'Guten Morgen!',
       textSorbian: 'Dobre ranje!',
       img: 'images/Fotolia_46575927_S.jpg',
@@ -38,6 +42,7 @@ export const mockVocabulary: Record<string, VocabItem[]> = {
     {
       id: 'voc-01-02',
       topicId: 'vocab-01',
+      order: 2,
       textGerman: 'Guten Tag!',
       textSorbian: 'Dobry dźeń!',
       img: 'images/Fotolia_35730691_S.jpg',
@@ -51,6 +56,7 @@ export const mockPhrases: Record<string, PhraseItem[]> = {
     {
       id: 'phr-01-01',
       topicId: 'phrases-01',
+      order: 1,
       germanText: 'Wie geht es dir?',
       sorbianText: 'Kak so maš?',
       germanAudio: 'audio/mock.mp3',
@@ -59,6 +65,7 @@ export const mockPhrases: Record<string, PhraseItem[]> = {
     {
       id: 'phr-01-02',
       topicId: 'phrases-01',
+      order: 2,
       germanText: 'Mir geht es gut.',
       sorbianText: 'Mě so dobre dari.',
       germanAudio: 'audio/mock.mp3',
@@ -68,9 +75,9 @@ export const mockPhrases: Record<string, PhraseItem[]> = {
 };
 
 export const mockHundredSeconds: HundredSecItem[] = [
-  { id: 'hund-01', name: 'Begrüßung', audio: 'audio/mock.mp3', image: 'images/Fotolia_46575927_S.jpg' },
-  { id: 'hund-02', name: 'Verabschiedung', audio: 'audio/mock.mp3', image: 'images/Fotolia_35730691_S.jpg' },
-  { id: 'hund-03', name: 'Nett sein', audio: 'audio/mock.mp3', image: 'images/Fotolia_46575927_S.jpg' },
-  { id: 'hund-04', name: 'Kiosk', audio: 'audio/mock.mp3', image: 'images/Fotolia_35730691_S.jpg' },
-  { id: 'hund-05', name: 'Liebe', audio: 'audio/mock.mp3', image: 'images/Fotolia_46575927_S.jpg' },
+  { id: 'hund-01', order: 1, name: 'Begrüßung', audio: 'audio/mock.mp3', image: 'images/Fotolia_46575927_S.jpg' },
+  { id: 'hund-02', order: 2, name: 'Verabschiedung', audio: 'audio/mock.mp3', image: 'images/Fotolia_35730691_S.jpg' },
+  { id: 'hund-03', order: 3, name: 'Nett sein', audio: 'audio/mock.mp3', image: 'images/Fotolia_46575927_S.jpg' },
+  { id: 'hund-04', order: 4, name: 'Kiosk', audio: 'audio/mock.mp3', image: 'images/Fotolia_35730691_S.jpg' },
+  { id: 'hund-05', order: 5, name: 'Liebe', audio: 'audio/mock.mp3', image: 'images/Fotolia_46575927_S.jpg' },
 ];

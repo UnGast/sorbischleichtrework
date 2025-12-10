@@ -113,7 +113,7 @@ export default function VocabularyReadRoute() {
         );
       }
     }
-    router.push({ pathname: `/learn/${topicId}/assign` });
+    router.replace({ pathname: `/learn/${topicId}/assign` });
   }, [activePackId, dispatch, router, topicId]);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -143,8 +143,8 @@ export default function VocabularyReadRoute() {
                   resizeMode="contain"
                 />
               ) : null}
-              <Text style={styles.german}>{item.textGerman}</Text>
               <Text style={styles.sorbian}>{item.textSorbian}</Text>
+              <Text style={styles.german}>{item.textGerman}</Text>
             </View>
           ))}
         </Animated.View>
@@ -218,16 +218,16 @@ const styles = StyleSheet.create({
     height: 180,
     marginBottom: 24,
   },
-  german: {
-    fontSize: 24,
-    fontWeight: '600',
+  sorbian: {
+    fontSize: 26,
+    fontWeight: '700',
     color: '#111827',
     textAlign: 'center',
     marginBottom: 12,
   },
-  sorbian: {
-    fontSize: 20,
-    color: '#4B5563',
+  german: {
+    fontSize: 18,
+    color: '#9CA3AF',
     textAlign: 'center',
   },
   controlsRow: {

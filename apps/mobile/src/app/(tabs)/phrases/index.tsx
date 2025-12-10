@@ -28,14 +28,26 @@ export default function PhrasesTopicsRoute() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         contentInsetAdjustmentBehavior="never"
-        renderItem={({ item }) => (
-          <Link href={`/phrases/${item.id}`} asChild>
-            <TopicTile
-              name={item.nameGerman}
-              subtitle={item.nameSorbian}
-            />
-          </Link>
-        )}
+        renderItem={({ item }) => {
+          const isAlphabet = item.kind === 'alphabet';
+          // For alphabet topic, show Sorbian name as primary and German as subtitle
+          const displayName = isAlphabet
+            ? item.nameSorbian
+            : item.nameGerman;
+          const displaySubtitle = isAlphabet
+            ? item.nameGerman
+            : item.nameSorbian;
+
+          return (
+            <Link href={`/phrases/${item.id}`} asChild>
+              <TopicTile
+                name={displayName}
+                subtitle={displaySubtitle}
+                isSpecial={isAlphabet}
+              />
+            </Link>
+          );
+        }}
       />
     </Screen>
   );

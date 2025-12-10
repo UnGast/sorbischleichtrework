@@ -100,14 +100,49 @@ export interface PhraseItemRecord {
   infoText?: string;
 }
 
+export type TopicKind = 'normal' | 'alphabet';
+
 export interface TopicRecord {
   id: string;
   type: 'phrases' | 'vocabulary' | 'hundredSeconds';
+  kind: TopicKind;
   nameGerman: string;
   nameSorbian: string;
   order: number;
   icon?: string;
   audioIntroSorbian?: string;
+}
+
+/**
+ * Detects if a topic is an alphabet/pronunciation guide topic based on its German name.
+ * These topics get special treatment in the app (different rendering, no auto-mode, etc.)
+ */
+function detectTopicKind(nameGerman: string): TopicKind {
+  const lower = nameGerman.toLowerCase();
+  if (lower.includes('alphabet') || lower.includes('aussprache') || lower.includes('pronunciation')) {
+    return 'alphabet';
+  }
+  return 'normal';
+}
+
+/**
+ * Returns the appropriate Sorbian name for alphabet topics based on the dialect.
+ * If the topic is an alphabet topic and has no proper Sorbian name, generates one.
+ */
+function resolveAlphabetSorbianName(nameGerman: string, nameSorbian: string): string {
+  // If there's already a proper Sorbian name (not just "/" or empty), use it
+  if (nameSorbian && nameSorbian !== '/' && nameSorbian.trim().length > 1) {
+    return nameSorbian;
+  }
+  
+  // Detect dialect from German name and provide appropriate Sorbian translation
+  const lower = nameGerman.toLowerCase();
+  if (lower.includes('wendisch') || lower.includes('niedersorbisch')) {
+    // Lower Sorbian (dolnoserbski)
+    return 'Serbski alfabet – pokazki za wugronjenje';
+  }
+  // Upper Sorbian (hornjoserbski) or English version
+  return 'Serbski alfabet – pokiwy za wurjekowanje';
 }
 
 export interface VocabItemRecord {
@@ -400,11 +435,17 @@ async function convertPhraseTopic(
     converted.push(base);
   }
 
+  const topicKind = detectTopicKind(topicLabel);
+  const finalSorbianName = topicKind === 'alphabet'
+    ? resolveAlphabetSorbianName(topicLabel, topicSorbian)
+    : topicSorbian;
+
   const topic: TopicRecord = {
     id: topicId,
     type: topicType,
+    kind: topicKind,
     nameGerman: topicLabel,
-    nameSorbian: topicSorbian,
+    nameSorbian: finalSorbianName,
     order: topicIndex,
   };
   if (topicAudioSorbian) {
@@ -472,9 +513,12 @@ async function convertVocabTopic(
     vocabulary.push(vocab);
   }
 
+  const topicKind = detectTopicKind(germanName);
+
   const topic: TopicRecord = {
     id: topicId,
     type: topicType,
+    kind: topicKind,
     nameGerman: germanName,
     nameSorbian: sorbianName,
     order: topicIndex,
@@ -491,6 +535,38 @@ async function convertVocabTopic(
   }
 
   return { topic, vocabulary };
+}
+
+/**
+ * Maps hundred seconds item names to their correct image files.
+ * The image files are numbered 1-5, but their visual content doesn't match
+ * the order in the XML file. This mapping ensures content matches visually:
+ * - slide_1: Woman waving hello → Begrüßung (greeting)
+ * - slide_2: Sausages on grill → Kiosk
+ * - slide_3: Couple with balloons → Liebe (love)
+ * - slide_4: "DANKE!" sign → Nett sein (being nice)
+ * - slide_5: Woman/child waving goodbye → Verabschiedung (farewell)
+ */
+function getHundredSecondsImageForItem(itemName: string): string | null {
+  const nameLower = itemName.toLowerCase();
+  
+  if (nameLower.includes('begrüßung') || nameLower.includes('greeting') || nameLower.includes('hello')) {
+    return 'hundredsec_slide_1'; // Woman waving hello
+  }
+  if (nameLower.includes('verabschiedung') || nameLower.includes('farewell') || nameLower.includes('goodbye')) {
+    return 'hundredsec_slide_5'; // Woman/child waving goodbye
+  }
+  if (nameLower.includes('nett') || nameLower.includes('danke') || nameLower.includes('nice') || nameLower.includes('thank')) {
+    return 'hundredsec_slide_4'; // "DANKE!" sign
+  }
+  if (nameLower.includes('kiosk') || nameLower.includes('essen') || nameLower.includes('food')) {
+    return 'hundredsec_slide_2'; // Sausages on grill
+  }
+  if (nameLower.includes('liebe') || nameLower.includes('love')) {
+    return 'hundredsec_slide_3'; // Couple with balloons
+  }
+  
+  return null;
 }
 
 async function convertHundredSeconds(
@@ -525,29 +601,54 @@ async function convertHundredSeconds(
     }
 
     if (image) {
+      // Explicit image specified in XML
       const normalizedImage = image.includes('/') ? image : `hundred/${image}`;
       const asset = await collectAsset(manifest, normalizedImage, imageRoot);
       if (asset) {
         record.image = asset.relativePath;
       }
     } else {
-      const fallbackNames = [
-        `hundredsec_slide_${index + 1}.jpg`,
-        `hundredsec_slide_${index + 1}.png`,
-      ];
-
-      for (const fileName of fallbackNames) {
-        try {
-          await fs.stat(path.join(imageRoot, fileName));
-        } catch {
-          continue;
+      // Map image based on item name content, not index
+      const mappedImageBase = getHundredSecondsImageForItem(name);
+      
+      if (mappedImageBase) {
+        // Try mapped image first
+        const mappedNames = [`${mappedImageBase}.jpg`, `${mappedImageBase}.png`];
+        for (const fileName of mappedNames) {
+          try {
+            await fs.stat(path.join(imageRoot, fileName));
+            const logicalName = `hundred/${fileName}`;
+            const asset = await collectAsset(manifest, logicalName, imageRoot);
+            if (asset) {
+              record.image = asset.relativePath;
+              break;
+            }
+          } catch {
+            continue;
+          }
         }
+      }
+      
+      // Fallback to index-based if no mapping found
+      if (!record.image) {
+        const fallbackNames = [
+          `hundredsec_slide_${index + 1}.jpg`,
+          `hundredsec_slide_${index + 1}.png`,
+        ];
 
-        const logicalName = `hundred/${fileName}`;
-        const asset = await collectAsset(manifest, logicalName, imageRoot);
-        if (asset) {
-          record.image = asset.relativePath;
-          break;
+        for (const fileName of fallbackNames) {
+          try {
+            await fs.stat(path.join(imageRoot, fileName));
+          } catch {
+            continue;
+          }
+
+          const logicalName = `hundred/${fileName}`;
+          const asset = await collectAsset(manifest, logicalName, imageRoot);
+          if (asset) {
+            record.image = asset.relativePath;
+            break;
+          }
         }
       }
     }
@@ -735,11 +836,17 @@ async function convertIosTopic(
     phrases.push(record);
   }
 
+  const topicKind = detectTopicKind(topicLabel);
+  const finalSorbianName = topicKind === 'alphabet'
+    ? resolveAlphabetSorbianName(topicLabel, topicSorbian)
+    : topicSorbian;
+
   const topic: TopicRecord = {
     id: topicId,
     type: 'phrases',
+    kind: topicKind,
     nameGerman: topicLabel,
-    nameSorbian: topicSorbian,
+    nameSorbian: finalSorbianName,
     order: topicIndex,
   };
 

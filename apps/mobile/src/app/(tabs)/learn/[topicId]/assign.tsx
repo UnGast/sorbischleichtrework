@@ -34,6 +34,7 @@ export default function VocabularyAssignRoute() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [completed, setCompleted] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
 
   const currentItem = prompts[currentIndex];
 
@@ -94,6 +95,8 @@ export default function VocabularyAssignRoute() {
         );
       }
 
+      setSelectedOptionId(option.id);
+
       if (option.isCorrect) {
         setFeedback('correct');
 
@@ -112,11 +115,15 @@ export default function VocabularyAssignRoute() {
 
         setTimeout(() => {
           setFeedback(null);
+          setSelectedOptionId(null);
           setCurrentIndex((prev) => Math.min(prev + 1, totalCount - 1));
         }, 600);
       } else {
         setFeedback('incorrect');
-        setTimeout(() => setFeedback(null), 800);
+        setTimeout(() => {
+          setFeedback(null);
+          setSelectedOptionId(null);
+        }, 800);
       }
     },
     [activePackId, completed, currentItem, dispatch, playback, totalCount],
@@ -144,7 +151,7 @@ export default function VocabularyAssignRoute() {
         );
       }
     }
-    router.push({ pathname: `/learn/${topicId}/write` });
+    router.replace({ pathname: `/learn/${topicId}/write` });
   }, [activePackId, dispatch, router, topicId]);
 
   if (prompts.length === 0) {
@@ -166,19 +173,20 @@ export default function VocabularyAssignRoute() {
 
       <View style={styles.optionsContainer}>
         {options.map((option) => {
-          const isCorrect = feedback === 'correct' && option.isCorrect;
-          const isIncorrect = feedback === 'incorrect' && !option.isCorrect;
+          const isSelected = selectedOptionId === option.id;
+          const showCorrect = feedback === 'correct' && option.isCorrect;
+          const showIncorrect = feedback === 'incorrect' && isSelected;
           const disabled = feedback !== null;
           return (
             <TouchableOpacity
               key={option.id}
               style={[
                 styles.option,
-                isCorrect && {
+                showCorrect && {
                   borderColor: primaryColor,
                   backgroundColor: withAlpha(primaryColor, 0.18),
                 },
-                isIncorrect && !option.isCorrect && styles.optionIncorrect,
+                showIncorrect && styles.optionIncorrect,
               ]}
               onPress={() => handleOptionPress(option)}
               disabled={disabled}

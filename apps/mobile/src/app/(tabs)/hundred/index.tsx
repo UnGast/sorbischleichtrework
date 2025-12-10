@@ -36,8 +36,13 @@ export default function HundredSecondsRoute() {
   const renderItem = ({ item }: ListRenderItemInfo<ReturnType<typeof useHundredSecondsItems>[number]>) => {
     const artworkSource = item.imageUri ? { uri: item.imageUri } : DEFAULT_ARTWORK;
     const trackId = `hundred-${item.id}`;
-    const isActive = playback.currentItemId === trackId || playback.currentItemId === item.id;
-    const isPlaying = isActive && playback.status === 'playing';
+    // Check both currentItemId (entityId) and currentTrackId for reliable detection on both platforms
+    const isActive = 
+      playback.currentItemId === item.id || 
+      playback.currentTrackId === trackId;
+    // For UI purposes, show stop button as soon as track is active and not paused/idle
+    // This ensures immediate feedback on Android where status events can be delayed
+    const showStopButton = isActive && playback.status !== 'paused' && playback.status !== 'idle';
     const progress = isActive && playback.durationSeconds > 0 ? Math.min(1, playback.positionSeconds / playback.durationSeconds) : 0;
     const currentPosition = isActive ? playback.positionSeconds : 0;
     const totalDuration = isActive && playback.durationSeconds > 0 ? playback.durationSeconds : 0;
@@ -47,11 +52,19 @@ export default function HundredSecondsRoute() {
         return;
       }
 
-      if (isActive) {
+      // If this track is active and playing/loading, stop it completely
+      if (isActive && showStopButton) {
+        await playback.stopPlayback();
+        return;
+      }
+      
+      // If this track is active but paused, resume
+      if (isActive && playback.status === 'paused') {
         await playback.togglePlay();
         return;
       }
 
+      // Start playing this track
       await playback.playTrack({
         id: `hundred-${item.id}`,
         title: item.name,
@@ -67,7 +80,6 @@ export default function HundredSecondsRoute() {
           isActive && {
             borderColor: primaryColor,
             borderWidth: 2,
-            backgroundColor: withAlpha(primaryColor, 0.08),
           },
         ]}
       >
@@ -84,12 +96,12 @@ export default function HundredSecondsRoute() {
             style={[
               styles.playButton,
               { backgroundColor: primaryColor },
-              isPlaying && { backgroundColor: withAlpha(primaryColor, 0.7) },
+              showStopButton && { backgroundColor: withAlpha(primaryColor, 0.7) },
             ]}
             onPress={handlePlayPress}
             activeOpacity={0.85}
           >
-            <Ionicons name={isPlaying ? 'pause' : 'play'} size={24} color="#FFFFFF" />
+            <Ionicons name={showStopButton ? 'stop' : 'play'} size={24} color="#FFFFFF" />
           </TouchableOpacity>
 
           <View style={styles.progressSection}>

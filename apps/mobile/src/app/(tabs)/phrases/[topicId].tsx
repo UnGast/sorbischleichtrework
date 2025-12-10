@@ -10,6 +10,22 @@ import { useActivePackId } from '@/hooks/useActivePackId';
 import { usePrimaryColor } from '@/hooks/usePrimaryColor';
 import { withAlpha } from '@/theme/colors';
 
+// Custom alphabet order for Sorbian
+const SORBIAN_ALPHABET_ORDER = [
+  'A', 'B', 'C', 'Č', 'Ć', 'D', 'Dź', 'E', 'ě', 'F', 'G', 'H', 'Ch',
+  'I', 'J', 'K', 'Ł', 'L', 'M', 'N', 'ń', 'O', 'ó', 'P', 'R', 'ř',
+  'S', 'Š', 'T', 'U', 'W', 'Y', 'Z', 'Ž', 'q', 'v', 'x'
+];
+
+function getAlphabetSortKey(letter: string): number {
+  // Extract the main letter from entries like "A a", "Č č", etc.
+  const mainLetter = letter.split(' ')[0];
+  const index = SORBIAN_ALPHABET_ORDER.findIndex(
+    (l) => l.toLowerCase() === mainLetter.toLowerCase()
+  );
+  return index >= 0 ? index : 999;
+}
+
 export default function PhraseTopicRoute() {
   const { topicId } = useLocalSearchParams<{ topicId: string }>();
   const phrases = usePhrasesForTopic(topicId ?? '');
@@ -21,7 +37,19 @@ export default function PhraseTopicRoute() {
   const activePackId = useActivePackId();
   const primaryColor = usePrimaryColor();
 
-  const data = useMemo(() => phrases, [phrases]);
+  const isAlphabet = topic?.kind === 'alphabet';
+
+  // Sort alphabet items according to Sorbian alphabet order
+  const data = useMemo(() => {
+    if (isAlphabet) {
+      return [...phrases].sort((a, b) => {
+        const keyA = getAlphabetSortKey(a.germanText);
+        const keyB = getAlphabetSortKey(b.germanText);
+        return keyA - keyB;
+      });
+    }
+    return phrases;
+  }, [phrases, isAlphabet]);
 
   useEffect(() => {
     if (!topicId) {
@@ -179,29 +207,39 @@ export default function PhraseTopicRoute() {
     );
   }
 
+  // Special title for alphabet topic - use Sorbian name as primary
+  const displayTitle = isAlphabet
+    ? topic?.nameSorbian || 'Serbski alfabet'
+    : topic?.nameGerman || 'Phrasen';
+
   return (
     <Screen>
       <View style={styles.header}>
-        <Text style={styles.title}>{topic?.nameGerman || 'Phrasen'}</Text>
+        <Text style={styles.title}>{displayTitle}</Text>
+        {isAlphabet && topic?.nameGerman ? (
+          <Text style={styles.alphabetSubtitle}>{topic.nameGerman}</Text>
+        ) : null}
       </View>
 
-      <TouchableOpacity
-        style={[
-          styles.modeButton,
-          autoMode && { backgroundColor: primaryColor },
-        ]}
-        onPress={autoMode ? stopAutoMode : startAutoMode}
-      >
-        <Text
+      {!isAlphabet ? (
+        <TouchableOpacity
           style={[
-            styles.modeButtonText,
-            autoMode && { color: '#FFFFFF' },
-            !autoMode && { color: primaryColor },
+            styles.modeButton,
+            autoMode && { backgroundColor: primaryColor },
           ]}
+          onPress={autoMode ? stopAutoMode : startAutoMode}
         >
-          {autoMode ? 'Auto Mode stoppen' : 'Auto Mode starten'}
-        </Text>
-      </TouchableOpacity>
+          <Text
+            style={[
+              styles.modeButtonText,
+              autoMode && { color: '#FFFFFF' },
+              !autoMode && { color: primaryColor },
+            ]}
+          >
+            {autoMode ? 'Auto Mode stoppen' : 'Auto Mode starten'}
+          </Text>
+        </TouchableOpacity>
+      ) : null}
 
       <FlatList
         data={data}
@@ -210,6 +248,35 @@ export default function PhraseTopicRoute() {
         contentInsetAdjustmentBehavior="never"
         renderItem={({ item }) => {
           const isSeparator = item.type === 'separator';
+
+          // Special rendering for alphabet items
+          if (isAlphabet && !isSeparator) {
+            const letter = item.germanText; // e.g., "A a", "Č č"
+            const description = item.sorbianText; // e.g., "a", "tsch wie in ›tschechisch‹"
+            
+            return (
+              <TouchableOpacity
+                style={[
+                  styles.alphabetItem,
+                  currentItemId === item.id && {
+                    borderLeftWidth: 4,
+                    borderLeftColor: primaryColor,
+                    backgroundColor: withAlpha(primaryColor, 0.06),
+                    paddingLeft: 12,
+                  },
+                ]}
+                onPress={() => playPhrase(item)}
+                disabled={autoMode}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.alphabetLetter}>{letter}</Text>
+                {description && description !== letter ? (
+                  <Text style={styles.alphabetDescription}>{description}</Text>
+                ) : null}
+              </TouchableOpacity>
+            );
+          }
+
           const sorbianLine = item.sorbianText?.trim().length ? item.sorbianText : item.germanText;
           const hasTranslationLine =
             !!item.germanText?.trim().length && item.germanText.trim() !== sorbianLine?.trim();
@@ -255,6 +322,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
   },
+  alphabetSubtitle: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginTop: 4,
+  },
   modeButton: {
     backgroundColor: '#F3F4F6',
     paddingHorizontal: 16,
@@ -273,6 +345,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#E5E7EB',
+  },
+  alphabetItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E5E7EB',
+    flexDirection: 'row',
+    alignItems: 'baseline',
+  },
+  alphabetLetter: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#111827',
+    minWidth: 60,
+  },
+  alphabetDescription: {
+    fontSize: 15,
+    color: '#9CA3AF',
+    flex: 1,
+    marginLeft: 8,
   },
   primary: {
     fontSize: 16,

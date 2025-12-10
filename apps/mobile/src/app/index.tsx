@@ -1,6 +1,6 @@
 import { Redirect } from 'expo-router';
 
 export default function IndexRoute() {
-  return <Redirect href="/(tabs)/learn" />;
+  return <Redirect href="/(tabs)/phrases" />;
 }
 

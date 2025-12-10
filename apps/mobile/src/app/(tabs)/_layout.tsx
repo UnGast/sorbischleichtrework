@@ -9,6 +9,7 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      initialRouteName="phrases"
       screenOptions={({ route }) => ({
         tabBarActiveTintColor: '#0F1115',
         headerStyle: { backgroundColor: '#FFFFFF' },
@@ -27,11 +28,11 @@ export default function TabsLayout() {
         },
       })}
     >
+      {modules.phrases ? (
+        <Tabs.Screen name="phrases" options={{ title: 'Redewendungen' }} />
+      ) : null}
       {modules.vocabulary ? (
         <Tabs.Screen name="learn" options={{ title: 'Übungen' }} />
-      ) : null}
-      {modules.phrases ? (
-        <Tabs.Screen name="phrases" options={{ title: 'Redwendungen' }} />
       ) : null}
       <Tabs.Screen
         name="hundred/index"
