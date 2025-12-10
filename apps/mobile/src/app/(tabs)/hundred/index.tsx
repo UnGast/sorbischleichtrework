@@ -87,7 +87,6 @@ export default function HundredSecondsRoute() {
           <Image source={artworkSource} style={styles.artwork} />
           <View style={styles.headerText}>
             <Text style={styles.title}>{item.name}</Text>
-            <Text style={styles.subtitle}>Kurzer Audio-Impuls · ca. 100 Sekunden</Text>
           </View>
         </View>
 
@@ -195,11 +194,6 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: '700',
     color: '#111827',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#64748B',
-    marginTop: 4,
   },
   playerRow: {
     flexDirection: 'row',
