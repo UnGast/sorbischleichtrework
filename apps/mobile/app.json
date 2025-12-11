@@ -11,11 +11,11 @@
     "ios": {
       "bundleIdentifier": "com.witaj.sorbischleicht.obersorbisch",
       "supportsTablet": true,
-      "buildNumber": "11"
+      "buildNumber": "13"
     },
     "android": {
       "package": "de.witaj.sorbischesprache.beta",
-      "versionCode": 11,
+      "versionCode": 13,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",

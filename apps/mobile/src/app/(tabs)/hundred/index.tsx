@@ -1,5 +1,6 @@
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/common/Screen';
 import { useHundredSecondsItems } from '@/services/content/contentRepository';
 import { useAudioPlayback } from '@/hooks/useAudioPlayback';
@@ -16,6 +17,7 @@ function formatTime(valueSeconds: number) {
 }
 
 export default function HundredSecondsRoute() {
+  const { t } = useTranslation();
   const items = useHundredSecondsItems();
   const playback = useAudioPlayback();
   const primaryColor = usePrimaryColor();
@@ -24,9 +26,9 @@ export default function HundredSecondsRoute() {
     return (
       <Screen>
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>Keine Inhalte verfügbar</Text>
+          <Text style={styles.emptyTitle}>{t('hundred.empty.title')}</Text>
           <Text style={styles.emptyMessage}>
-            In diesem Content-Paket sind aktuell keine Beiträge für "Sorbisch in 100 Sekunden" enthalten.
+            {t('hundred.empty.message')}
           </Text>
         </View>
       </Screen>
@@ -131,9 +133,9 @@ export default function HundredSecondsRoute() {
         renderItem={renderItem}
         ListHeaderComponent={
           <View style={styles.headerContainer}>
-            <Text style={styles.heading}>Sorbisch in 100 Sekunden</Text>
+            <Text style={styles.heading}>{t('hundred.title')}</Text>
             <Text style={styles.description}>
-              Kleine Audio-Lektionen zum schnellen Auffrischen – perfekt für unterwegs oder zwischen zwei Terminen.
+              {t('hundred.description')}
             </Text>
           </View>
         }

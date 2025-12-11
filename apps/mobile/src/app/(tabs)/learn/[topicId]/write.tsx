@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import shuffle from 'lodash/shuffle';
 import { Screen } from '@/components/common/Screen';
 import { useResolvedVocabularyForTopic } from '@/services/content/contentRepository';
@@ -30,6 +31,7 @@ function buildScrambledTiles(word: string): LetterTile[] {
 }
 
 export default function VocabularyWriteRoute() {
+  const { t } = useTranslation();
   const { topicId } = useLocalSearchParams<{ topicId: string }>();
   const router = useRouter();
   const playback = useAudioPlayback();
@@ -240,7 +242,7 @@ export default function VocabularyWriteRoute() {
   if (!currentItem) {
     return (
       <Screen>
-        <Text style={styles.empty}>Keine Schreibaufgaben verfügbar.</Text>
+        <Text style={styles.empty}>{t('learn.write.empty')}</Text>
       </Screen>
     );
   }
@@ -253,11 +255,11 @@ export default function VocabularyWriteRoute() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 96 : 0}
       >
         <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          <Text style={styles.prompt}>Schreibe das sorbische Wort für</Text>
+          <Text style={styles.prompt}>{t('learn.write.prompt')}</Text>
           <Text style={[styles.german, { color: primaryColor }]}>{currentItem.textGerman}</Text>
 
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Deine Antwort</Text>
+            <Text style={styles.sectionLabel}>{t('learn.write.yourAnswer')}</Text>
             <View
               style={[
                 styles.answerBox,
@@ -269,7 +271,7 @@ export default function VocabularyWriteRoute() {
               ]}
             >
               <Text style={[styles.answerPreview, selectedTiles.length === 0 && styles.answerPlaceholder]}>
-                {selectedTiles.length === 0 ? 'Tippe die Buchstaben an' : answer}
+                {selectedTiles.length === 0 ? t('learn.write.tapLetters') : answer}
               </Text>
 
               {selectedTiles.length > 0 ? (
@@ -283,7 +285,7 @@ export default function VocabularyWriteRoute() {
                       ]}
                       onPress={() => handleSelectedTilePress(tile.id)}
                       accessibilityRole="button"
-                      accessibilityLabel={`Ausgewählter Buchstabe ${tile.char}`}
+                      accessibilityLabel={`${t('learn.write.a11y.selected')} ${tile.char}`}
                       activeOpacity={0.8}
                     >
                       <Text style={styles.selectedTileText}>{tile.char}</Text>
@@ -325,16 +327,16 @@ export default function VocabularyWriteRoute() {
                   setIsCorrect(null);
                 }}
               >
-              <Text style={[styles.actionChipText, { color: primaryColor }]}>Neu mischen</Text>
+              <Text style={[styles.actionChipText, { color: primaryColor }]}>{t('learn.write.shuffle')}</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Verfügbare Buchstaben</Text>
+            <Text style={styles.sectionLabel}>{t('learn.write.availableLetters')}</Text>
             <View style={styles.lettersContainer}>
               {availableTiles.length === 0 ? (
-                <Text style={styles.answerPlaceholder}>Alle Buchstaben verwendet</Text>
+                <Text style={styles.answerPlaceholder}>{t('learn.write.allUsed')}</Text>
               ) : (
                 availableTiles.map((tile) => (
                   <TouchableOpacity
@@ -348,7 +350,7 @@ export default function VocabularyWriteRoute() {
                     ]}
                     onPress={() => handleSelectTile(tile.id)}
                     accessibilityRole="button"
-                    accessibilityLabel={`Buchstabe ${tile.char}`}
+                    accessibilityLabel={`${t('learn.write.a11y.letter')} ${tile.char}`}
                     activeOpacity={0.85}
                   >
                     <Text style={[styles.letterText, { color: primaryColor }]}>{tile.char}</Text>
@@ -358,9 +360,9 @@ export default function VocabularyWriteRoute() {
             </View>
           </View>
 
-          {isCorrect === false ? <Text style={styles.feedbackError}>Fast! Versuche es erneut.</Text> : null}
+          {isCorrect === false ? <Text style={styles.feedbackError}>{t('learn.write.tryAgain')}</Text> : null}
           {isCorrect === true ? (
-            <Text style={[styles.feedbackSuccess, { color: primaryColor }]}>{`Richtig! ${currentItem.textSorbian}`}</Text>
+            <Text style={[styles.feedbackSuccess, { color: primaryColor }]}>{`${t('learn.write.correct')} ${currentItem.textSorbian}`}</Text>
           ) : null}
 
           <View style={styles.actions}>
@@ -378,13 +380,9 @@ export default function VocabularyWriteRoute() {
               ]}
             >
               <Text style={styles.primaryText}>
-                {isCorrect === true
-                  ? currentIndex === exercises.length - 1
-                    ? 'Fertigstellen'
-                    : 'Weiter'
-                  : currentIndex === exercises.length - 1
-                  ? 'Fertigstellen'
-                  : 'Weiter'}
+                {currentIndex === exercises.length - 1
+                  ? t('learn.write.finish')
+                  : t('learn.write.next')}
               </Text>
             </TouchableOpacity>
           </View>

@@ -1,10 +1,12 @@
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useAudioPlayback } from '@/hooks/useAudioPlayback';
 import { Ionicons } from '@expo/vector-icons';
 import { usePrimaryColor } from '@/hooks/usePrimaryColor';
 import { withAlpha } from '@/theme/colors';
 
 export function AudioBar() {
+  const { t } = useTranslation();
   const {
     isPlaying,
     positionSeconds,
@@ -54,7 +56,7 @@ export function AudioBar() {
 
         <View style={styles.trackInfo}>
           <Text style={styles.trackTitle} numberOfLines={1}>
-            {queue[0]?.title || 'Keine Audiodatei'}
+            {queue[0]?.title || t('audio.noFile')}
           </Text>
           <Text style={styles.trackSubtitle} numberOfLines={1}>
             {queue[0]?.subtitle || ''}
@@ -64,7 +66,7 @@ export function AudioBar() {
         {isAutoModeEnabled && (
           <View style={[styles.autoModeIndicator, { backgroundColor: withAlpha(primaryColor, 0.2) }]}>
             <Ionicons name="repeat" size={16} color={primaryColor} />
-            <Text style={[styles.autoModeText, { color: primaryColor }]}>Auto</Text>
+            <Text style={[styles.autoModeText, { color: primaryColor }]}>{t('audio.auto')}</Text>
           </View>
         )}
       </View>

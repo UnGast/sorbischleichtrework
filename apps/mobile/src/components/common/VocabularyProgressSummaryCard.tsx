@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { usePrimaryColor } from '@/hooks/usePrimaryColor';
 import { withAlpha } from '@/theme/colors';
 
@@ -18,6 +19,7 @@ export function VocabularyProgressSummaryCard({
   totalExercises,
   percentComplete,
 }: Props) {
+  const { t } = useTranslation();
   const percentLabel = Math.round(percentComplete * 100);
   const primaryColor = usePrimaryColor();
   const styles = useMemo(() => createStyles(primaryColor), [primaryColor]);
@@ -25,7 +27,7 @@ export function VocabularyProgressSummaryCard({
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>Dein Vokabel-Fortschritt</Text>
+        <Text style={styles.title}>{t('learn.progress.title')}</Text>
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{percentLabel}%</Text>
         </View>
@@ -34,16 +36,16 @@ export function VocabularyProgressSummaryCard({
       <View style={styles.statsRow}>
         <View style={styles.statBlock}>
           <Text style={styles.statValue}>{completedTopics}</Text>
-          <Text style={styles.statLabel}>Themen abgeschlossen</Text>
-          <Text style={styles.statHint}>von {totalTopics}</Text>
+          <Text style={styles.statLabel}>{t('learn.progress.topics.completed')}</Text>
+          <Text style={styles.statHint}>{t('learn.progress.topics.of')} {totalTopics}</Text>
         </View>
 
         <View style={styles.divider} />
 
         <View style={styles.statBlock}>
           <Text style={styles.statValue}>{masteredExercises}</Text>
-          <Text style={styles.statLabel}>Aufgaben gemeistert</Text>
-          <Text style={styles.statHint}>von {totalExercises}</Text>
+          <Text style={styles.statLabel}>{t('learn.progress.exercises.mastered')}</Text>
+          <Text style={styles.statHint}>{t('learn.progress.exercises.of')} {totalExercises}</Text>
         </View>
       </View>
 

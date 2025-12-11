@@ -41,10 +41,10 @@ export const CONTENT_PACKS: ContentPackTarget[] = [
     },
   },
   {
-    packId: 'ios-english-pack',
+    packId: 'main-english-pack',
     label: 'English → Obersorbisch',
-    archivePath: sourcePath('ios-english-pack.zip'),
-    hashPath: sourcePath('ios-english-pack-hash.sha256'),
+    archivePath: sourcePath('main-english-pack.zip'),
+    hashPath: sourcePath('main-english-pack-hash.sha256'),
     buildProfiles: {
       ios: 'testflight',
       android: 'android-internal',

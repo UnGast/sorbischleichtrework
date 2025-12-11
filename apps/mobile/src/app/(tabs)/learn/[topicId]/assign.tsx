@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import shuffle from 'lodash/shuffle';
 import { Screen } from '@/components/common/Screen';
 import { useResolvedVocabularyForTopic } from '@/services/content/contentRepository';
@@ -21,6 +22,7 @@ interface OptionItem {
 }
 
 export default function VocabularyAssignRoute() {
+  const { t } = useTranslation();
   const { topicId } = useLocalSearchParams<{ topicId: string }>();
   const router = useRouter();
   const playback = useAudioPlayback();
@@ -157,7 +159,7 @@ export default function VocabularyAssignRoute() {
   if (prompts.length === 0) {
     return (
       <Screen>
-        <Text style={styles.empty}>Keine Zuordnungsaufgaben verfügbar.</Text>
+        <Text style={styles.empty}>{t('learn.assign.empty')}</Text>
       </Screen>
     );
   }
@@ -165,7 +167,7 @@ export default function VocabularyAssignRoute() {
   return (
     <Screen padded>
       <Text style={[styles.heading, { color: primaryColor }]}>
-        Welche sorbische Übersetzung passt?
+        {t('learn.assign.question')}
       </Text>
       <View style={[styles.promptBox, { backgroundColor: withAlpha(primaryColor, 0.12) }]}>
         <Text style={[styles.promptText, { color: primaryColor }]}>{currentItem?.textGerman}</Text>
@@ -210,7 +212,7 @@ export default function VocabularyAssignRoute() {
           onPress={navigateToWrite}
           disabled={!allDone}
         >
-          <Text style={styles.ctaText}>Zur Schreibübung</Text>
+          <Text style={styles.ctaText}>{t('learn.assign.toWrite')}</Text>
         </TouchableOpacity>
       </View>
     </Screen>

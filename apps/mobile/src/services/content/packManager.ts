@@ -13,6 +13,7 @@ export interface PackSummary {
   modules: ModuleAvailability;
   contentFile: string;
   primaryColor?: string;
+  interfaceLanguage?: string;
 }
 
 interface PackManifest {
@@ -22,6 +23,7 @@ interface PackManifest {
   modules: ModuleAvailability;
   contentFile?: string;
   primaryColor?: string;
+  interfaceLanguage?: string;
 }
 
 function joinDirectory(base: Directory, name: string): Directory {
@@ -122,6 +124,11 @@ class PackManager {
     return summary?.primaryColor;
   }
 
+  getPackInterfaceLanguage(packId: string): string | undefined {
+    const summary = this.availablePacks.find((entry) => entry.packId === packId);
+    return summary?.interfaceLanguage;
+  }
+
   async getModuleAvailability(packId: string): Promise<ModuleAvailability> {
     const summary = this.availablePacks.find((entry) => entry.packId === packId);
     return summary?.modules ?? { vocabulary: false, phrases: false, hundredSeconds: false };
@@ -202,6 +209,7 @@ class PackManager {
         contentFile,
         packDir: entry,
         primaryColor,
+        interfaceLanguage: manifest.interfaceLanguage,
       });
     }
 

@@ -1,8 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useModuleAvailability, useHundredSecondsItems } from '@/services/content/contentRepository';
 
 export default function TabsLayout() {
+  const { t } = useTranslation();
   const modules = useModuleAvailability();
   const hundredItems = useHundredSecondsItems();
   const showHundred = modules.hundredSeconds && hundredItems.length > 0;
@@ -28,20 +30,28 @@ export default function TabsLayout() {
         },
       })}
     >
-      {modules.phrases ? (
-        <Tabs.Screen name="phrases" options={{ title: 'Redewendungen' }} />
-      ) : null}
-      {modules.vocabulary ? (
-        <Tabs.Screen name="learn" options={{ title: 'Übungen' }} />
-      ) : null}
+      <Tabs.Screen
+        name="phrases"
+        options={{
+          title: t('tabs.phrases'),
+          href: modules.phrases ? undefined : null,
+        }}
+      />
+      <Tabs.Screen
+        name="learn"
+        options={{
+          title: t('tabs.learn'),
+          href: modules.vocabulary ? undefined : null,
+        }}
+      />
       <Tabs.Screen
         name="hundred/index"
         options={{
-          title: '100 Sekunden',
+          title: t('tabs.hundred'),
           href: showHundred ? undefined : null,
         }}
       />
-      <Tabs.Screen name="about" options={{ title: 'Über' }} />
+      <Tabs.Screen name="about" options={{ title: t('tabs.about') }} />
     </Tabs>
   );
 }

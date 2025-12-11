@@ -1,10 +1,12 @@
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { Link } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/common/Screen';
 import { TopicTile } from '@/components/common/TopicTile';
 import { useModuleAvailability, useTopicsByType } from '@/services/content/contentRepository';
 
 export default function PhrasesTopicsRoute() {
+  const { t } = useTranslation();
   const modules = useModuleAvailability();
   const topics = useTopicsByType('phrases');
 
@@ -12,9 +14,9 @@ export default function PhrasesTopicsRoute() {
     return (
       <Screen>
         <View style={styles.unavailableContainer}>
-          <Text style={styles.unavailableTitle}>Phrasen nicht verfügbar</Text>
+          <Text style={styles.unavailableTitle}>{t('phrases.unavailable.title')}</Text>
           <Text style={styles.unavailableText}>
-            Das Phrasen-Modul ist in diesem Content-Paket nicht enthalten.
+            {t('phrases.unavailable.text')}
           </Text>
         </View>
       </Screen>

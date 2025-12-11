@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useGlobalSearchParams, useLocalSearchParams, useRouter } from 'expo-router';
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -28,6 +29,7 @@ type GlobalParams = {
 };
 
 export default function VocabularyReadRoute() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { topicId } = useLocalSearchParams<{ topicId: string }>();
   const { itemId } = useGlobalSearchParams<GlobalParams>();
@@ -125,7 +127,7 @@ export default function VocabularyReadRoute() {
   if (!currentItem) {
     return (
       <Screen>
-        <Text style={styles.empty}>Keine Inhalte vorhanden.</Text>
+        <Text style={styles.empty}>{t('learn.read.empty')}</Text>
       </Screen>
     );
   }
@@ -159,11 +161,11 @@ export default function VocabularyReadRoute() {
               index === 0 && styles.secondaryButtonDisabled,
             ]}
           >
-            Zurück
+{t('common.back')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={playCurrent} style={[styles.primaryButton, { backgroundColor: primaryColor }]}>
-          <Text style={styles.primaryButtonText}>Anhören</Text>
+          <Text style={styles.primaryButtonText}>{t('learn.read.listen')}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={goNext} disabled={index === orderedItems.length - 1} style={styles.secondaryButton}>
           <Text
@@ -173,7 +175,7 @@ export default function VocabularyReadRoute() {
               index === orderedItems.length - 1 && styles.secondaryButtonDisabled,
             ]}
           >
-            Weiter
+{t('learn.write.next')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -183,7 +185,7 @@ export default function VocabularyReadRoute() {
           onPress={navigateToAssign}
           style={[styles.ctaButton, { backgroundColor: primaryColor }]}
         >
-          <Text style={styles.ctaText}>Zum Zuordnen</Text>
+          <Text style={styles.ctaText}>{t('learn.read.toAssign')}</Text>
         </TouchableOpacity>
       </View>
     </Screen>

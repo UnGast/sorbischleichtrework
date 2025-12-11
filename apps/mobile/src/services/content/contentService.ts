@@ -42,6 +42,13 @@ export async function initializeContent() {
     await packManager.activatePack(activePack.packId);
     const primaryColor = packManager.getPackPrimaryColor(activePack.packId) ?? DEFAULT_PRIMARY_COLOR;
     dispatch(setPrimaryColor(primaryColor));
+    
+    // Update i18n language based on pack's interface language
+    const interfaceLanguage = packManager.getPackInterfaceLanguage(activePack.packId);
+    if (interfaceLanguage) {
+      const i18n = (await import('@/i18n/setup')).default;
+      await i18n.changeLanguage(interfaceLanguage);
+    }
     await store.dispatch(loadProgressForPack(activePack.packId));
 
     const packData = await packManager.loadPackContent(activePack.packId);
@@ -87,6 +94,13 @@ export async function loadLegacyContent() {
   dispatch(setActivePack(fallbackPackId));
   await packManager.activatePack(fallbackPackId);
   dispatch(setPrimaryColor(packManager.getPackPrimaryColor(fallbackPackId) ?? DEFAULT_PRIMARY_COLOR));
+  
+  // Update i18n language based on pack's interface language
+  const interfaceLanguage = packManager.getPackInterfaceLanguage(fallbackPackId);
+  if (interfaceLanguage) {
+    const i18n = (await import('@/i18n/setup')).default;
+    await i18n.changeLanguage(interfaceLanguage);
+  }
   await store.dispatch(loadProgressForPack(fallbackPackId));
 
   const packData = await packManager.loadPackContent(fallbackPackId);

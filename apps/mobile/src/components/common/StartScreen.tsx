@@ -1,4 +1,5 @@
 import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { usePrimaryColor } from '@/hooks/usePrimaryColor';
 
 interface StartScreenProps {
@@ -8,8 +9,10 @@ interface StartScreenProps {
 
 const WITAJ_LOGO = require('@assets/images/splash-icon.png');
 
-export function StartScreen({ message = 'Inhalte werden geladen...', showSpinner = true }: StartScreenProps) {
+export function StartScreen({ message, showSpinner = true }: StartScreenProps) {
+  const { t } = useTranslation();
   const primaryColor = usePrimaryColor();
+  const displayMessage = message ?? t('app.loading.content');
 
   return (
     <View style={styles.container}>
@@ -18,7 +21,7 @@ export function StartScreen({ message = 'Inhalte werden geladen...', showSpinner
 
         {showSpinner ? <ActivityIndicator size="large" color={primaryColor} style={styles.spinner} /> : null}
 
-        <Text style={[styles.message, { color: primaryColor }]}>{message}</Text>
+        <Text style={[styles.message, { color: primaryColor }]}>{displayMessage}</Text>
       </View>
     </View>
   );

@@ -3,6 +3,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Provider } from 'react-redux';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { store, useAppSelector } from '@/store';
 import { initializeContent } from '@/services/content/contentService';
 import { StartScreen } from '@/components/common/StartScreen';
@@ -10,6 +11,7 @@ import { StartScreen } from '@/components/common/StartScreen';
 const MIN_SPLASH_DURATION_MS = 1000;
 
 function BootstrapGate({ children }: PropsWithChildren) {
+  const { t } = useTranslation();
   const didInitRef = useRef(false);
   const splashStartRef = useRef<number>(Date.now());
   const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -67,8 +69,8 @@ function BootstrapGate({ children }: PropsWithChildren) {
   if (bootstrapStatus === 'error') {
     return (
       <View style={styles.centered}>
-        <Text style={styles.errorTitle}>Fehler beim Laden der Inhalte</Text>
-        <Text style={styles.errorMessage}>{errorMessage ?? 'Unbekannter Fehler'}</Text>
+        <Text style={styles.errorTitle}>{t('app.error.loadingContent')}</Text>
+        <Text style={styles.errorMessage}>{errorMessage ?? t('app.error.unknown')}</Text>
       </View>
     );
   }
@@ -76,7 +78,7 @@ function BootstrapGate({ children }: PropsWithChildren) {
   const showSplash = bootstrapStatus !== 'ready' || isSplashLocked;
 
   if (showSplash) {
-    const message = bootstrapStatus === 'ready' ? "Los geht's!" : 'Inhalte werden geladen...';
+    const message = bootstrapStatus === 'ready' ? t('app.loading.ready') : t('app.loading.content');
     return <StartScreen message={message} showSpinner={bootstrapStatus !== 'ready'} />;
   }
 

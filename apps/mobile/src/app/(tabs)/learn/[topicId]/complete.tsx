@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/common/Screen';
 import { useActivePackId } from '@/hooks/useActivePackId';
 import { useAppDispatch, useAppSelector } from '@/store';
@@ -11,6 +12,7 @@ import { usePrimaryColor } from '@/hooks/usePrimaryColor';
 import { withAlpha } from '@/theme/colors';
 
 export default function TopicCompleteRoute() {
+  const { t } = useTranslation();
   const { topicId } = useLocalSearchParams<{ topicId: string }>();
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -31,12 +33,12 @@ export default function TopicCompleteRoute() {
     return (
       <Screen>
         <View style={styles.container}>
-          <Text style={styles.title}>Thema nicht gefunden.</Text>
+          <Text style={styles.title}>{t('common.topicNotFound')}</Text>
           <TouchableOpacity
             style={[styles.primaryButton, { backgroundColor: primaryColor }]}
             onPress={() => router.replace('/(tabs)/learn')}
           >
-            <Text style={styles.primaryButtonText}>Zur Themenübersicht</Text>
+            <Text style={styles.primaryButtonText}>{t('common.toTopics')}</Text>
           </TouchableOpacity>
         </View>
       </Screen>
@@ -68,20 +70,20 @@ export default function TopicCompleteRoute() {
   return (
     <Screen scrollable>
       <View style={styles.container}>
-        <Text style={styles.title}>Gut gemacht!</Text>
-        <Text style={styles.subtitle}>Du hast das Thema abgeschlossen.</Text>
+        <Text style={styles.title}>{t('common.wellDone')}</Text>
+        <Text style={styles.subtitle}>{t('common.topicCompleted')}</Text>
 
         <View style={[styles.card, { backgroundColor: withAlpha(primaryColor, 0.12) }]}>
-          <Text style={[styles.cardTitle, { color: primaryColor }]}>Dein Fortschritt</Text>
+          <Text style={[styles.cardTitle, { color: primaryColor }]}>{t('learn.topic.progress.title')}</Text>
           <Text style={styles.cardValue}>
           {progressSummary.masteredExercises} / {progressSummary.totalExercises}
           </Text>
           <Text style={styles.cardHint}>
-            {hasExercises ? `Beherrschte Aufgaben · ${percentLabel}%` : 'Keine Übungen in diesem Thema'}
+            {hasExercises ? `${t('learn.topic.progress.mastered')} · ${percentLabel}%` : t('learn.topic.progress.noExercises')}
           </Text>
           {topicCompletion?.completedAt ? (
             <Text style={styles.metaText}>
-              Abgeschlossen am {new Date(topicCompletion.completedAt).toLocaleDateString()}
+              {t('learn.topic.completed.at')} {new Date(topicCompletion.completedAt).toLocaleDateString()}
             </Text>
           ) : null}
         </View>
@@ -91,13 +93,13 @@ export default function TopicCompleteRoute() {
             style={[styles.primaryButton, { backgroundColor: primaryColor }]}
             onPress={handleBackHome}
           >
-            <Text style={styles.primaryButtonText}>Zur Themenübersicht</Text>
+            <Text style={styles.primaryButtonText}>{t('common.toTopics')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.secondaryButton, { borderColor: primaryColor }]}
             onPress={handleRedoTopic}
           >
-            <Text style={[styles.secondaryButtonText, { color: primaryColor }]}>Thema wiederholen</Text>
+            <Text style={[styles.secondaryButtonText, { color: primaryColor }]}>{t('common.redoTopic')}</Text>
           </TouchableOpacity>
         </View>
       </View>

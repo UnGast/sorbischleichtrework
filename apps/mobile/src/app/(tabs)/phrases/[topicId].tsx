@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/common/Screen';
 import { usePhrasesForTopic, useTopicById } from '@/services/content/contentRepository';
 import { useAudioPlayback } from '@/hooks/useAudioPlayback';
@@ -27,6 +28,7 @@ function getAlphabetSortKey(letter: string): number {
 }
 
 export default function PhraseTopicRoute() {
+  const { t } = useTranslation();
   const { topicId } = useLocalSearchParams<{ topicId: string }>();
   const phrases = usePhrasesForTopic(topicId ?? '');
   const topic = useTopicById(topicId ?? '');
@@ -202,15 +204,15 @@ export default function PhraseTopicRoute() {
   if (data.length === 0) {
     return (
       <Screen>
-        <Text style={styles.empty}>Für dieses Thema sind noch keine Phrasen hinterlegt.</Text>
+        <Text style={styles.empty}>{t('phrases.topic.empty')}</Text>
       </Screen>
     );
   }
 
   // Special title for alphabet topic - use Sorbian name as primary
   const displayTitle = isAlphabet
-    ? topic?.nameSorbian || 'Serbski alfabet'
-    : topic?.nameGerman || 'Phrasen';
+    ? topic?.nameSorbian || t('fallback.alphabet')
+    : topic?.nameGerman || t('fallback.phrases');
 
   return (
     <Screen>
@@ -236,7 +238,7 @@ export default function PhraseTopicRoute() {
               !autoMode && { color: primaryColor },
             ]}
           >
-            {autoMode ? 'Auto Mode stoppen' : 'Auto Mode starten'}
+            {autoMode ? t('phrases.auto.stop') : t('phrases.auto.start')}
           </Text>
         </TouchableOpacity>
       ) : null}
@@ -303,7 +305,7 @@ export default function PhraseTopicRoute() {
           </TouchableOpacity>
           );
         }}
-        ListEmptyComponent={<Text style={styles.emptyList}>Keine Phrasen verfügbar.</Text>}
+        ListEmptyComponent={<Text style={styles.emptyList}>{t('phrases.list.empty')}</Text>}
         showsVerticalScrollIndicator={false}
       />
 

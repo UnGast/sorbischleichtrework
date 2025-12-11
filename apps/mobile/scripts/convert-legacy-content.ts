@@ -19,6 +19,7 @@ interface ConvertOptions {
   packId: string;
   displayName: string;
   contentVersion: string;
+  interfaceLanguage?: string;
 }
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
@@ -193,15 +194,36 @@ function copyAssets(assets: Record<string, AssetManifestEntry>, destRoot: string
   });
 }
 
-function writeManifest(destPath: string, options: ConvertOptions) {
+function writeManifest(
+  destPath: string,
+  options: ConvertOptions,
+  conversion: LegacyConversionResult,
+) {
+  // Determine if vocabulary module should be enabled based on actual content
+  const hasVocabulary = Object.keys(conversion.vocabularyByTopic).length > 0;
+  const hasPhrases = Object.keys(conversion.phrasesByTopic).length > 0;
+  const hasHundredSeconds = conversion.hundredSeconds.length > 0;
+
+  // Determine interface language from packId or use provided language
+  let interfaceLanguage = options.interfaceLanguage;
+  if (!interfaceLanguage) {
+    // Auto-detect from packId
+    if (options.packId.includes('english') || options.packId.includes('en')) {
+      interfaceLanguage = 'en';
+    } else {
+      interfaceLanguage = 'de';
+    }
+  }
+
   const manifest = {
     packId: options.packId,
     displayName: options.displayName,
     contentVersion: options.contentVersion,
+    interfaceLanguage,
     modules: {
-      vocabulary: true,
-      phrases: true,
-      hundredSeconds: true,
+      vocabulary: hasVocabulary,
+      phrases: hasPhrases,
+      hundredSeconds: hasHundredSeconds,
     },
     contentFile: 'content.db',
     primaryColor: DEFAULT_PRIMARY_COLOR,
@@ -255,7 +277,7 @@ export async function buildContentPack(options: ConvertOptions) {
 
   copyAssets(conversion.assets.files, packDir);
 
-  writeManifest(path.join(packDir, 'pack.json'), options);
+  writeManifest(path.join(packDir, 'pack.json'), options, conversion);
 
   const zipPath = path.join(outputDir, `${packId}.zip`);
   await zipDirectory(packDir, zipPath, packId);
