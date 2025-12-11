@@ -1,0 +1,13 @@
+{
+  "packId": "main-english-pack",
+  "displayName": "English Upper Sorbian",
+  "contentVersion": "1.0.0",
+  "interfaceLanguage": "en",
+  "modules": {
+    "vocabulary": false,
+    "phrases": true,
+    "hundredSeconds": false
+  },
+  "contentFile": "content.db",
+  "primaryColor": "#A91A36"
+}
