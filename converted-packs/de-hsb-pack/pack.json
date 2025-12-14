@@ -1,7 +1,8 @@
 {
   "packId": "de-hsb-pack",
   "displayName": "DE_HSB Pack",
-  "contentVersion": "1.1.0",
+  "contentVersion": "1.0.0",
+  "interfaceLanguage": "de",
   "modules": {
     "vocabulary": true,
     "phrases": true,

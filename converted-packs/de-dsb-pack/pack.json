@@ -2,10 +2,11 @@
   "packId": "de-dsb-pack",
   "displayName": "DE_DSB Pack",
   "contentVersion": "1.0.0",
+  "interfaceLanguage": "de",
   "modules": {
     "vocabulary": true,
     "phrases": true,
-    "hundredSeconds": true
+    "hundredSeconds": false
   },
   "contentFile": "content.db",
   "primaryColor": "#A91A36"
