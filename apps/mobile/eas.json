@@ -48,6 +48,24 @@
         "applicationId": "de.witaj.sorbischesprache.beta"
       }
     },
+    "android-internal-hsb": {
+      "extends": "android-internal",
+      "android": {
+        "applicationId": "de.witaj.sorbischesprache.hsb"
+      }
+    },
+    "android-internal-dsb": {
+      "extends": "android-internal",
+      "android": {
+        "applicationId": "de.witaj.sorbischesprache.dsb"
+      }
+    },
+    "android-internal-eng": {
+      "extends": "android-internal",
+      "android": {
+        "applicationId": "de.witaj.sorbischesprache.eng"
+      }
+    },
     "local-ios": {
       "extends": "testflight",
       "distribution": "store",
