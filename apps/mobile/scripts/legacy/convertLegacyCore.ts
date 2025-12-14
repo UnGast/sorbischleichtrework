@@ -274,7 +274,7 @@ function determineRelativePath(logicalName: string): string {
 async function collectAsset(
   manifest: AssetManifest,
   logicalName: string,
-  sourceRoot: string,
+  sourceRoot: string | string[],
 ): Promise<AssetManifestEntry | undefined> {
   if (!logicalName) {
     return undefined;
@@ -304,29 +304,41 @@ async function collectAsset(
     sourceRelative = normalized.slice('drawable/'.length);
   }
 
-  const sourcePath = path.join(sourceRoot, sourceRelative);
+  const sourceRoots = Array.isArray(sourceRoot) ? sourceRoot : [sourceRoot];
+  let lastNonEnoentError: unknown;
 
-  try {
-    const stats = await fs.stat(sourcePath);
-    if (!stats.isFile()) {
-      console.warn(`[convert] Asset ${logicalName} not a file at ${sourcePath}`);
-      return undefined;
+  for (const root of sourceRoots) {
+    const sourcePath = path.join(root, sourceRelative);
+
+    try {
+      const stats = await fs.stat(sourcePath);
+      if (!stats.isFile()) {
+        lastNonEnoentError = new Error(`[convert] Asset ${logicalName} not a file at ${sourcePath}`);
+        continue;
+      }
+
+      const relativePath = determineRelativePath(normalized);
+
+      const entry: AssetManifestEntry = {
+        logicalName,
+        bytes: stats.size,
+        sourcePath,
+        relativePath,
+      };
+      manifest.files[logicalName] = entry;
+      return entry;
+    } catch (error) {
+      const err = error as NodeJS.ErrnoException;
+      if (!err?.code || err.code !== 'ENOENT') {
+        lastNonEnoentError = error;
+      }
     }
-
-    const relativePath = determineRelativePath(normalized);
-
-    const entry: AssetManifestEntry = {
-      logicalName,
-      bytes: stats.size,
-      sourcePath,
-      relativePath,
-    };
-    manifest.files[logicalName] = entry;
-    return entry;
-  } catch (error) {
-    console.warn(`[convert] Failed to process asset ${logicalName} from ${sourcePath}:`, error);
-    return undefined;
   }
+
+  if (lastNonEnoentError) {
+    console.warn(`[convert] Failed to process asset ${logicalName}:`, lastNonEnoentError);
+  }
+  return undefined;
 }
 
 async function directoryExists(dirPath: string): Promise<boolean> {
@@ -569,6 +581,46 @@ function getHundredSecondsImageForItem(itemName: string): string | null {
   return null;
 }
 
+async function buildDrawableSearchRoots(imageRoot: string): Promise<string[]> {
+  const roots = new Set<string>();
+
+  // When imageRoot already points to a drawable directory, use its parent as base.
+  const baseRoot = path.basename(imageRoot).toLowerCase().startsWith('drawable')
+    ? path.dirname(imageRoot)
+    : imageRoot;
+
+  roots.add(imageRoot);
+
+  const defaultDrawableDirs = [
+    'drawable',
+    'drawable-nodpi',
+    'drawable-ldpi',
+    'drawable-mdpi',
+    'drawable-hdpi',
+    'drawable-xhdpi',
+    'drawable-xxhdpi',
+    'drawable-xxxhdpi',
+  ];
+
+  defaultDrawableDirs.forEach((dir) => roots.add(path.join(baseRoot, dir)));
+
+  try {
+    const entries = await fs.readdir(baseRoot, { withFileTypes: true });
+    entries.forEach((entry) => {
+      if (entry.isDirectory() && entry.name.toLowerCase().startsWith('drawable')) {
+        roots.add(path.join(baseRoot, entry.name));
+      }
+    });
+  } catch (error) {
+    const err = error as NodeJS.ErrnoException;
+    if (err.code !== 'ENOENT') {
+      console.warn(`[convert] Failed to read drawable roots from ${baseRoot}:`, error);
+    }
+  }
+
+  return Array.from(roots);
+}
+
 async function convertHundredSeconds(
   filePath: string,
   manifest: AssetManifest,
@@ -577,6 +629,7 @@ async function convertHundredSeconds(
 ): Promise<HundredSecRecord[]> {
   const legacy = await readHundredSecondsFile(filePath);
   const items = legacy.inHundredSeconds.item ?? [];
+  const drawableRoots = await buildDrawableSearchRoots(imageRoot);
   const result: HundredSecRecord[] = [];
 
   for (let index = 0; index < items.length; index += 1) {
@@ -603,7 +656,7 @@ async function convertHundredSeconds(
     if (image) {
       // Explicit image specified in XML
       const normalizedImage = image.includes('/') ? image : `hundred/${image}`;
-      const asset = await collectAsset(manifest, normalizedImage, imageRoot);
+      const asset = await collectAsset(manifest, normalizedImage, drawableRoots);
       if (asset) {
         record.image = asset.relativePath;
       }
@@ -615,16 +668,11 @@ async function convertHundredSeconds(
         // Try mapped image first
         const mappedNames = [`${mappedImageBase}.jpg`, `${mappedImageBase}.png`];
         for (const fileName of mappedNames) {
-          try {
-            await fs.stat(path.join(imageRoot, fileName));
-            const logicalName = `hundred/${fileName}`;
-            const asset = await collectAsset(manifest, logicalName, imageRoot);
-            if (asset) {
-              record.image = asset.relativePath;
-              break;
-            }
-          } catch {
-            continue;
+          const logicalName = `hundred/${fileName}`;
+          const asset = await collectAsset(manifest, logicalName, drawableRoots);
+          if (asset) {
+            record.image = asset.relativePath;
+            break;
           }
         }
       }
@@ -637,14 +685,8 @@ async function convertHundredSeconds(
         ];
 
         for (const fileName of fallbackNames) {
-          try {
-            await fs.stat(path.join(imageRoot, fileName));
-          } catch {
-            continue;
-          }
-
           const logicalName = `hundred/${fileName}`;
-          const asset = await collectAsset(manifest, logicalName, imageRoot);
+          const asset = await collectAsset(manifest, logicalName, drawableRoots);
           if (asset) {
             record.image = asset.relativePath;
             break;

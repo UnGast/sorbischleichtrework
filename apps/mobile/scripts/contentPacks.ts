@@ -5,6 +5,8 @@ export interface ContentPackTarget {
   label: string;
   archivePath: string;
   hashPath: string;
+  iosBundleIdentifier?: string;
+  androidApplicationId?: string;
   buildProfiles: {
     ios: string;
     android: string;
@@ -25,9 +27,11 @@ export const CONTENT_PACKS: ContentPackTarget[] = [
     label: 'Obersorbisch',
     archivePath: sourcePath('de-hsb-pack.zip'),
     hashPath: sourcePath('de-hsb-pack-hash.sha256'),
+    iosBundleIdentifier: 'com.witaj.sorbischleicht.obersorbisch',
+    androidApplicationId: 'de.witaj.sorbischesprache.beta',
     buildProfiles: {
       ios: 'testflight',
-      android: 'android-internal',
+      android: 'android-internal-hsb',
     },
   },
   {
@@ -35,9 +39,11 @@ export const CONTENT_PACKS: ContentPackTarget[] = [
     label: 'Niedersorbisch',
     archivePath: sourcePath('de-dsb-pack.zip'),
     hashPath: sourcePath('de-dsb-pack-hash.sha256'),
+    iosBundleIdentifier: 'com.witaj.sorbischleicht.niedersorbisch',
+    androidApplicationId: 'de.witaj.sorbischesprache.dsb.beta',
     buildProfiles: {
       ios: 'testflight',
-      android: 'android-internal',
+      android: 'android-internal-dsb',
     },
   },
   {
@@ -45,9 +51,11 @@ export const CONTENT_PACKS: ContentPackTarget[] = [
     label: 'English → Obersorbisch',
     archivePath: sourcePath('main-english-pack.zip'),
     hashPath: sourcePath('main-english-pack-hash.sha256'),
+    iosBundleIdentifier: 'com.witaj.sorbianeasy.uppersorbian',
+    androidApplicationId: 'de.witaj.sorbischesprache.hsb.eng.beta',
     buildProfiles: {
       ios: 'testflight',
-      android: 'android-internal',
+      android: 'android-internal-eng',
     },
   },
 ];
